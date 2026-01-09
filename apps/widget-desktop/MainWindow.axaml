@@ -1,0 +1,38 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:WidgetDesktop.Models"
+        x:Class="WidgetDesktop.MainWindow"
+        Width="340" Height="520"
+        CanResize="True">
+
+  <Border CornerRadius="14" Padding="12">
+    <DockPanel LastChildFill="True">
+
+      <TextBlock DockPanel.Dock="Top"
+                 FontSize="18"
+                 FontWeight="Bold"
+                 Text="To-Do" Margin="0,0,0,10"/>
+
+      <ListBox Name="TodoList">
+<ListBox.ItemTemplate>
+  <DataTemplate x:DataType="models:ItemDto">
+    <Border Padding="10" CornerRadius="12" Margin="0,0,0,8">
+      <DockPanel LastChildFill="True">
+
+        <Border DockPanel.Dock="Right"
+                Padding="8,4"
+                CornerRadius="10">
+          <TextBlock Text="{Binding Status}" FontSize="12"/>
+        </Border>
+
+        <TextBlock Text="{Binding Title}" TextWrapping="Wrap"/>
+      </DockPanel>
+    </Border>
+  </DataTemplate>
+</ListBox.ItemTemplate>
+
+      </ListBox>
+
+    </DockPanel>
+  </Border>
+</Window>
