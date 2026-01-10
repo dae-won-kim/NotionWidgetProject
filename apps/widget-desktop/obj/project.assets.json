@@ -1424,7 +1424,7 @@
     "version": "1.0.0",
     "restore": {
       "projectUniqueName": "C:\\Users\\2000d\\Desktop\\NotionWidgetProject\\apps\\widget-desktop\\widget-desktop.csproj",
-      "projectName": "widget-desktop",
+      "projectName": "WidgetDesktop",
       "projectPath": "C:\\Users\\2000d\\Desktop\\NotionWidgetProject\\apps\\widget-desktop\\widget-desktop.csproj",
       "packagesPath": "C:\\Users\\2000d\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\2000d\\Desktop\\NotionWidgetProject\\apps\\widget-desktop\\obj\\",

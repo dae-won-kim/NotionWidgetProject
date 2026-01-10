@@ -1,0 +1,73 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:theme="clr-namespace:WidgetDesktop.Styles">
+
+  <!-- ======================
+       Window
+       ====================== -->
+  <Style Selector="Window">
+    <Setter Property="Background"
+            Value="{x:Static theme:WidgetTheme.BgWindow}"/>
+    <Setter Property="FontFamily"
+            Value="{x:Static theme:WidgetTheme.FontFamilyPrimary}"/>
+  </Style>
+
+  <!-- ======================
+       Checklist Item
+       ====================== -->
+  <Style Selector="Border.row">
+    <Setter Property="CornerRadius"
+            Value="{x:Static theme:WidgetTheme.RadiusItem}"/>
+    <Setter Property="Background"
+            Value="{x:Static theme:WidgetTheme.BgItem}"/>
+    <Setter Property="BorderBrush"
+            Value="{x:Static theme:WidgetTheme.BorderItem}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+  </Style>
+
+  <Style Selector="Border.row:pointerover">
+    <Setter Property="Background"
+            Value="{x:Static theme:WidgetTheme.BgItemHover}"/>
+  </Style>
+
+  <!-- ======================
+       Text
+       ====================== -->
+  <Style Selector="TextBlock">
+    <Setter Property="Foreground"
+            Value="{x:Static theme:WidgetTheme.TextPrimary}"/>
+    <Setter Property="FontSize"
+            Value="{x:Static theme:WidgetTheme.FontSizeBody}"/>
+  </Style>
+
+  <Style Selector="TextBlock.title">
+    <Setter Property="FontSize"
+            Value="{x:Static theme:WidgetTheme.FontSizeTitle}"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+  </Style>
+
+  <!-- ======================
+       Status Button
+       ====================== -->
+  <Style Selector="Button.status">
+    <Setter Property="CornerRadius"
+            Value="{x:Static theme:WidgetTheme.RadiusStatus}"/>
+    <Setter Property="FontSize"
+            Value="{x:Static theme:WidgetTheme.FontSizeStatus}"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="Padding" Value="10,4"/>
+    <Setter Property="Opacity" Value="1"/>
+  </Style>
+
+  <Style Selector="Button.status:pointerover">
+    <Setter Property="Opacity"
+            Value="{x:Static theme:WidgetTheme.StatusHoverOpacity}"/>
+  </Style>
+
+  <Style Selector="Button.status:pressed">
+    <Setter Property="Opacity"
+            Value="{x:Static theme:WidgetTheme.StatusPressedOpacity}"/>
+  </Style>
+
+</Styles>

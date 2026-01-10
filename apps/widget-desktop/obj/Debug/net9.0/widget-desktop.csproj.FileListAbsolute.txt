@@ -72,3 +72,6 @@ C:\Users\2000d\Desktop\NotionWidgetProject\apps\widget-desktop\bin\Debug\net9.0\
 C:\Users\2000d\Desktop\NotionWidgetProject\apps\widget-desktop\obj\Debug\net9.0\widget-d.4B73AF21.Up2Date
 C:\Users\2000d\Desktop\NotionWidgetProject\apps\widget-desktop\obj\Debug\net9.0\widget-desktop.genruntimeconfig.cache
 C:\Users\2000d\Desktop\NotionWidgetProject\apps\widget-desktop\obj\Debug\net9.0\ref\widget-desktop.dll
+C:\Users\2000d\Desktop\NotionWidgetProject\apps\widget-desktop\obj\Debug\net9.0\WidgetDesktop.dll
+C:\Users\2000d\Desktop\NotionWidgetProject\apps\widget-desktop\obj\Debug\net9.0\refint\WidgetDesktop.dll
+C:\Users\2000d\Desktop\NotionWidgetProject\apps\widget-desktop\obj\Debug\net9.0\WidgetDesktop.pdb

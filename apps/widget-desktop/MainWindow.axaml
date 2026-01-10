@@ -1,37 +1,100 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:models="clr-namespace:WidgetDesktop.Models"
+        xmlns:conv="clr-namespace:WidgetDesktop.Converters"
         x:Class="WidgetDesktop.MainWindow"
-        Width="340" Height="520"
-        CanResize="True">
+        Width="360" Height="560"
+        Topmost="True">
 
-  <Border CornerRadius="14" Padding="12">
-    <DockPanel LastChildFill="True">
+  <!-- ✅ 리소스는 Window 내부에만 -->
+  <Window.Resources>
+    <conv:NotionColorToBrushConverter x:Key="NotionColorToBrushConverter"/>
+    <conv:NotionColorToForegroundConverter x:Key="NotionColorToForegroundConverter"/>
+  </Window.Resources>
+
+  <!-- ✅ Styles도 Window 내부에만 -->
+  <Window.Styles>
+
+    <Style Selector="Border.row">
+      <Setter Property="CornerRadius" Value="999"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="BorderBrush" Value="#33FFFFFF"/>
+      <Setter Property="Background" Value="#10FFFFFF"/>
+    </Style>
+
+    <Style Selector="Border.row:pointerover">
+      <Setter Property="Background" Value="#22FFFFFF"/>
+    </Style>
+
+    <Style Selector="Button.status">
+      <Setter Property="CornerRadius" Value="999"/>
+      <Setter Property="Padding" Value="10,4"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Focusable" Value="False"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Opacity" Value="1"/>
+    </Style>
+
+    <Style Selector="Button.status:pointerover">
+      <Setter Property="Opacity" Value="0.90"/>
+    </Style>
+
+    <Style Selector="Button.status:pressed">
+      <Setter Property="Opacity" Value="0.78"/>
+    </Style>
+
+  </Window.Styles>
+
+  <Border Padding="12"
+          CornerRadius="16"
+          PointerPressed="WindowDragArea_PointerPressed">
+
+    <DockPanel>
 
       <TextBlock DockPanel.Dock="Top"
+                 Text="Checklist"
                  FontSize="18"
                  FontWeight="Bold"
-                 Text="To-Do" Margin="0,0,0,10"/>
+                 Margin="0,0,0,12"/>
 
-      <ListBox Name="TodoList">
-<ListBox.ItemTemplate>
-  <DataTemplate x:DataType="models:ItemDto">
-    <Border Padding="10" CornerRadius="12" Margin="0,0,0,8">
-      <DockPanel LastChildFill="True">
+      <ScrollViewer>
+        <ItemsControl Name="TodoItems">
+  <ItemsControl.ItemTemplate>
+    <DataTemplate x:DataType="models:ItemDto">
 
-        <Border DockPanel.Dock="Right"
-                Padding="8,4"
-                CornerRadius="10">
-          <TextBlock Text="{Binding Status}" FontSize="12"/>
-        </Border>
+      <!-- 체크리스트 한 줄 -->
+      <Border Classes="row"
+              Padding="12"
+              Margin="0,0,0,8"
+              PointerPressed="Row_PointerPressed"
+              PointerMoved="Row_PointerMoved"
+              PointerReleased="Row_PointerReleased">
 
-        <TextBlock Text="{Binding Title}" TextWrapping="Wrap"/>
-      </DockPanel>
-    </Border>
-  </DataTemplate>
-</ListBox.ItemTemplate>
+        <DockPanel>
 
-      </ListBox>
+          <!-- ✅ 여기입니다 -->
+          <Button Classes="status"
+                  DockPanel.Dock="Right"
+                  Background="{Binding StatusColor,
+                    Converter={StaticResource NotionColorToBrushConverter}}"
+                  Content="{Binding Status}"
+                  Click="StatusButton_Click"
+                  PointerPressed="StatusButton_RightPressed"/>
+
+          <!-- 체크리스트 제목 -->
+          <TextBlock Text="{Binding Title}"
+                     TextWrapping="Wrap"
+                     Margin="0,0,10,0"/>
+
+        </DockPanel>
+      </Border>
+
+    </DataTemplate>
+  </ItemsControl.ItemTemplate>
+</ItemsControl>
+
+      </ScrollViewer>
 
     </DockPanel>
   </Border>

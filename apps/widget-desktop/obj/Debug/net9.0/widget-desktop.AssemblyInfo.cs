@@ -10,12 +10,12 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("widget-desktop")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("WidgetDesktop")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0eae84734fa1436e1679657a80e00ee18a65f325")]
-[assembly: System.Reflection.AssemblyProductAttribute("widget-desktop")]
-[assembly: System.Reflection.AssemblyTitleAttribute("widget-desktop")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d37028852bafa4641c03fe438958119b094a7ec0")]
+[assembly: System.Reflection.AssemblyProductAttribute("WidgetDesktop")]
+[assembly: System.Reflection.AssemblyTitleAttribute("WidgetDesktop")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 
 // MSBuild WriteCodeFragment 클래스에서 생성되었습니다.

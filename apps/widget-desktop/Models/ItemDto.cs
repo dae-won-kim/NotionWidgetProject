@@ -1,31 +1,51 @@
-using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
 namespace WidgetDesktop.Models;
 
-public sealed class ItemDto
+public class ItemDto : INotifyPropertyChanged
 {
     public string Id { get; set; } = "";
     public string Title { get; set; } = "";
-    public string? Status { get; set; }
-    public string? StatusId { get; set; }
-    public string? LastEditedTime { get; set; }
-}
 
-public sealed class StatusOptionDto
-{
-    public string Id { get; set; } = "";
-    public string Name { get; set; } = "";
-}
+    private string? _status;
+    public string? Status
+    {
+        get => _status;
+        set { _status = value; OnPropertyChanged(); }
+    }
 
-public sealed class QueryItemsResponseDto
-{
-    public List<ItemDto> Items { get; set; } = new();
-    public List<StatusOptionDto> StatusOptions { get; set; } = new();
-}
+    private string? _statusId;
+    public string? StatusId
+    {
+        get => _statusId;
+        set { _statusId = value; OnPropertyChanged(); }
+    }
 
-public sealed class StatusUpdateResponseDto
-{
-    public string Id { get; set; } = "";
-    public string? Status { get; set; }
-    public string? StatusId { get; set; }
-    public string? LastEditedTime { get; set; }
+    private string? _lastEditedTime;
+    public string? LastEditedTime
+    {
+        get => _lastEditedTime;
+        set { _lastEditedTime = value; OnPropertyChanged(); }
+    }
+
+    // ✅ Notion status.color (예: "blue", "green", "gray"...)
+    private string? _statusColor;
+    public string? StatusColor
+    {
+        get => _statusColor;
+        set { _statusColor = value; OnPropertyChanged(); }
+    }
+
+    // (선택) 드래그 정렬용 UI 순서가 이미 있다면 유지
+    private int _uiOrder;
+    public int UiOrder
+    {
+        get => _uiOrder;
+        set { _uiOrder = value; OnPropertyChanged(); }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    private void OnPropertyChanged([CallerMemberName] string? name = null)
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }

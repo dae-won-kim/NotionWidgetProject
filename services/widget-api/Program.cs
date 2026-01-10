@@ -16,6 +16,9 @@ var items = new Dictionary<string, DummyItem>
 {
     ["page1"] = new DummyItem { Id="page1", Title="Complete the Galle project", StatusId="opt_a" },
     ["page2"] = new DummyItem { Id="page2", Title="Go to the gym on Tuesday", StatusId="opt_c" },
+    ["page3"] = new DummyItem { Id="page3", Title="Test ㅁㄴㅊㅁㄴA", StatusId="opt_a" },
+    ["page4"] = new DummyItem { Id="page4", Title="Test 123 b", StatusId="opt_c" },
+    ["page5"] = new DummyItem { Id="page5", Title="Party TIME", StatusId="opt_c" },
 };
 
 app.MapGet("/", () => Results.Ok(new { app = "widget-api", ok = true }));
