@@ -1,0 +1,20 @@
+System.InvalidCastException: Setter value 'White' is not a valid value for property 'Background'.
+   at Avalonia.Styling.Setter.Instance(IStyleInstance instance, StyledElement target)
+   at Avalonia.Styling.StyleBase.Attach(StyledElement target, IStyleActivator activator, FrameType type, Boolean canShareInstance)
+   at Avalonia.Styling.Style.TryAttach(StyledElement target, Object host, FrameType type)
+   at Avalonia.StyledElement.ApplyStyle(IStyle style, IStyleHost host, FrameType type)
+   at Avalonia.StyledElement.ApplyStyle(IStyle style, IStyleHost host, FrameType type)
+   at Avalonia.StyledElement.ApplyStyles(IStyleHost host)
+   at Avalonia.StyledElement.ApplyStyles(IStyleHost host)
+   at Avalonia.StyledElement.ApplyStyling()
+   at Avalonia.StyledElement.EndInit()
+   at WidgetDesktop.MainWindow.!XamlIlPopulate(IServiceProvider, MainWindow) in C:\Users\2000d\Desktop\NotionWidgetProject\apps\widget-desktop\MainWindow.axaml:line 61
+   at WidgetDesktop.MainWindow.!XamlIlPopulateTrampoline(MainWindow)
+   at WidgetDesktop.MainWindow.InitializeComponent(Boolean loadXaml, Boolean attachDevTools) in C:\Users\2000d\Desktop\NotionWidgetProject\apps\widget-desktop\obj\Debug\net9.0\Avalonia.Generators\Avalonia.Generators.NameGenerator.AvaloniaNameSourceGenerator\WidgetDesktop.MainWindow.g.cs:line 26
+   at WidgetDesktop.MainWindow..ctor() in C:\Users\2000d\Desktop\NotionWidgetProject\apps\widget-desktop\MainWindow.axaml.cs:line 31
+   at WidgetDesktop.App.OnFrameworkInitializationCompleted() in C:\Users\2000d\Desktop\NotionWidgetProject\apps\widget-desktop\App.axaml.cs:line 18
+   at Avalonia.AppBuilder.SetupUnsafe()
+   at Avalonia.AppBuilder.Setup()
+   at Avalonia.AppBuilder.SetupWithLifetime(IApplicationLifetime lifetime)
+   at Avalonia.ClassicDesktopStyleApplicationLifetimeExtensions.StartWithClassicDesktopLifetime(AppBuilder builder, String[] args, Action`1 lifetimeBuilder)
+   at WidgetDesktop.Program.Main(String[] args) in C:\Users\2000d\Desktop\NotionWidgetProject\apps\widget-desktop\Program.cs:line 13

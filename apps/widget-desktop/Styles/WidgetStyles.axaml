@@ -6,8 +6,9 @@
        Window
        ====================== -->
   <Style Selector="Window">
+
     <Setter Property="Background"
-            Value="{x:Static theme:WidgetTheme.BgWindow}"/>
+            Value="{x:Static theme:WidgetTheme.BgWindowBrush}"/>
     <Setter Property="FontFamily"
             Value="{x:Static theme:WidgetTheme.FontFamilyPrimary}"/>
   </Style>
@@ -17,25 +18,24 @@
        ====================== -->
   <Style Selector="Border.row">
     <Setter Property="CornerRadius"
-            Value="{x:Static theme:WidgetTheme.RadiusItem}"/>
+            Value="{x:Static theme:WidgetTheme.RadiusItemCorner}"/>
     <Setter Property="Background"
-            Value="{x:Static theme:WidgetTheme.BgItem}"/>
+            Value="{x:Static theme:WidgetTheme.BgItemBrush}"/>
     <Setter Property="BorderBrush"
-            Value="{x:Static theme:WidgetTheme.BorderItem}"/>
+            Value="{x:Static theme:WidgetTheme.BorderItemBrush}"/>
     <Setter Property="BorderThickness" Value="1"/>
   </Style>
 
   <Style Selector="Border.row:pointerover">
     <Setter Property="Background"
-            Value="{x:Static theme:WidgetTheme.BgItemHover}"/>
+            Value="{x:Static theme:WidgetTheme.BgItemHoverBrush}"/>
   </Style>
 
   <!-- ======================
        Text
        ====================== -->
   <Style Selector="TextBlock">
-    <Setter Property="Foreground"
-            Value="{x:Static theme:WidgetTheme.TextPrimary}"/>
+<Setter Property="Foreground" Value="{x:Static theme:WidgetTheme.TextPrimaryBrush}"/>
     <Setter Property="FontSize"
             Value="{x:Static theme:WidgetTheme.FontSizeBody}"/>
   </Style>
@@ -51,7 +51,7 @@
        ====================== -->
   <Style Selector="Button.status">
     <Setter Property="CornerRadius"
-            Value="{x:Static theme:WidgetTheme.RadiusStatus}"/>
+            Value="{x:Static theme:WidgetTheme.RadiusStatusCorner}"/>
     <Setter Property="FontSize"
             Value="{x:Static theme:WidgetTheme.FontSizeStatus}"/>
     <Setter Property="BorderThickness" Value="0"/>
@@ -71,3 +71,4 @@
   </Style>
 
 </Styles>
+

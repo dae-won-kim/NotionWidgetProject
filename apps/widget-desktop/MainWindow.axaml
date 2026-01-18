@@ -9,7 +9,6 @@
   <!-- ✅ 리소스는 Window 내부에만 -->
   <Window.Resources>
     <conv:NotionColorToBrushConverter x:Key="NotionColorToBrushConverter"/>
-    <conv:NotionColorToForegroundConverter x:Key="NotionColorToForegroundConverter"/>
   </Window.Resources>
 
   <!-- ✅ Styles도 Window 내부에만 -->

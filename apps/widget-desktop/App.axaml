@@ -2,8 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="WidgetDesktop.App">
 
+             
 <Application.Styles>
-  <StyleInclude Source="avares://WidgetDesktop/Styles/WidgetStyles.axaml"/>
+  <StyleInclude Source="/Styles/WidgetStyles.axaml"/>
 </Application.Styles>
 
 </Application>
