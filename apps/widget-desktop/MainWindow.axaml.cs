@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using WidgetDesktop.Models;
 using WidgetDesktop.Services;
 
@@ -15,7 +17,7 @@ public partial class MainWindow : Window
     private const string WidgetId = "w_1";
     private readonly WidgetApiClient _api = new("http://localhost:5055");
 
-    private List<ItemDto> _items = new();
+    private ObservableCollection<ItemDto> _items = new();
 
     // ✅ Notion status option 순서(정렬 우선순위)
     private Dictionary<string, int> _statusRank = new();
@@ -30,30 +32,72 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        // ✅ XAML 렌더링/바인딩 자체가 되는지 확인용 기본 항목(로드 후 덮어씀)
+        var initial = new ObservableCollection<ItemDto>
+        {
+            new() { Id = "local_loading", Title = "(loading...)", Status = "", StatusId = "opt_a", IsChecked = false }
+        };
+        TodoItems.ItemsSource = initial;
+
+        // ✅ DEBUG: 생성자에서 컨트롤 참조/바인딩이 실제로 동작하는지 화면에 표시
+        ErrorText.IsVisible = true;
+        ErrorText.Text = $"DEBUG: ctor bound items = {initial.Count}";
+
         Opened += async (_, __) =>
         {
-            var data = await _api.QueryItemsAsync(WidgetId);
-
-            // 1) status 순서(옵션 배열 순서 그대로)
-            _statusRank = data.StatusOptions
-                .Select((opt, idx) => (opt.Id, idx))
-                .ToDictionary(x => x.Id, x => x.idx);
-
-            // 2) statusId -> color
-            _statusIdToColor = data.StatusOptions
-                .Where(o => !string.IsNullOrWhiteSpace(o.Id))
-                .ToDictionary(o => o.Id, o => (o.Color ?? "gray"));
-
-            // 3) 아이템 로드 + StatusColor 채우기 + UI 순서 초기화
-            int order = 0;
-            _items = data.Items.ToList();
-            foreach (var it in _items)
+            try
             {
-                it.UiOrder = order++;
-                it.StatusColor = ResolveColor(it.StatusId);
-            }
+                ErrorText.IsVisible = false;
+                ErrorText.Text = "";
 
-            SortAndBind();
+                var data = await _api.QueryItemsAsync(WidgetId);
+
+                // 1) status 순서(옵션 배열 순서 그대로)
+                _statusRank = data.StatusOptions
+                    .Select((opt, idx) => (opt.Id, idx))
+                    .ToDictionary(x => x.Id, x => x.idx);
+
+                // 2) statusId -> color
+                _statusIdToColor = data.StatusOptions
+                    .Where(o => !string.IsNullOrWhiteSpace(o.Id))
+                    .ToDictionary(o => o.Id, o => (o.Color ?? "gray"));
+
+                // 3) 아이템 로드 + StatusColor 채우기 + UI 순서 초기화
+                int order = 0;
+                _items.Clear();
+                foreach (var it in data.Items)
+                {
+                    it.UiOrder = order++;
+                    it.StatusColor = ResolveColor(it.StatusId);
+                    _items.Add(it);
+                }
+
+                // 정렬 없이 바로 바인딩(ObservableCollection)
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    TodoItems.ItemsSource = null;
+                    TodoItems.ItemsSource = _items;
+                });
+
+                ErrorText.IsVisible = true;
+                ErrorText.Text =
+                    $"DEBUG: loaded items = {_items.Count}\n" +
+                    $"DEBUG: TodoItems type = {TodoItems.GetType().FullName}\n" +
+                    $"DEBUG: ItemsSource type = {TodoItems.ItemsSource?.GetType().FullName ?? "(null)"}";
+            }
+            catch (Exception ex)
+            {
+                // ✅ 실패해도 화면에 원인을 표시
+                ErrorText.IsVisible = true;
+                ErrorText.Text = $"Failed to load items.\n{ex.GetType().Name}: {ex.Message}";
+
+                // 로딩 표시 유지
+                _items.Clear();
+                TodoItems.ItemsSource = new List<ItemDto>
+                {
+                    new() { Id = "local_error", Title = "(no items)", Status = "", StatusId = "opt_a", IsChecked = false }
+                };
+            }
         };
     }
 

@@ -4,7 +4,8 @@
         xmlns:conv="clr-namespace:WidgetDesktop.Converters"
         x:Class="WidgetDesktop.MainWindow"
         Width="360" Height="560"
-        Topmost="True">
+        Topmost="True"
+        Title="Checklist Widget">
 
   <!-- ✅ 리소스는 Window 내부에만 -->
   <Window.Resources>
@@ -17,8 +18,8 @@
     <Style Selector="Border.row">
       <Setter Property="CornerRadius" Value="999"/>
       <Setter Property="BorderThickness" Value="1"/>
-      <Setter Property="BorderBrush" Value="#33FFFFFF"/>
-      <Setter Property="Background" Value="#10FFFFFF"/>
+      <Setter Property="BorderBrush" Value="#E0E0E0"/>
+      <Setter Property="Background" Value="#F7F7F7"/>
     </Style>
 
     <Style Selector="Border.row:pointerover">
@@ -57,10 +58,27 @@
                  FontWeight="Bold"
                  Margin="0,0,0,12"/>
 
-      <ScrollViewer>
-        <ItemsControl Name="TodoItems">
-  <ItemsControl.ItemTemplate>
-    <DataTemplate x:DataType="models:ItemDto">
+      <!-- ✅ DEBUG: 이 문구가 보이면 최신 XAML이 로드된 것 -->
+      <TextBlock DockPanel.Dock="Top"
+                 Text="(DEBUG) XAML LOADED"
+                 Opacity="0.7"
+                 Margin="0,0,0,8"/>
+
+      <!-- 로딩/에러 표시 -->
+      <TextBlock Name="ErrorText"
+                 DockPanel.Dock="Top"
+                 IsVisible="True"
+                 TextWrapping="Wrap"
+                 Background="#FFFFCC"
+                 Foreground="Black"
+                 Margin="0,0,0,12"/>
+
+      <ListBox Name="TodoItems"
+               BorderThickness="0"
+               Background="#10FF0000"
+               MinHeight="200">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="models:ItemDto">
 
       <!-- 체크리스트 한 줄 -->
       <Border Classes="row"
@@ -72,6 +90,12 @@
 
         <DockPanel>
 
+          <!-- ✅ DEBUG: 템플릿이 실제로 렌더링되면 이 글자가 반드시 보임 -->
+          <TextBlock DockPanel.Dock="Top"
+                     Text="ROW"
+                     Foreground="Red"
+                     Margin="0,0,0,6"/>
+
           <!-- ✅ 여기입니다 -->
           <Button Classes="status"
                   DockPanel.Dock="Right"
@@ -81,19 +105,24 @@
                   Click="StatusButton_Click"
                   PointerPressed="StatusButton_RightPressed"/>
 
+          <!-- ✅ 체크박스 -->
+          <CheckBox IsChecked="{Binding IsChecked}"
+                    Background="Red"
+                    VerticalAlignment="Center"
+                    Margin="0,0,10,0"/>
+
           <!-- 체크리스트 제목 -->
           <TextBlock Text="{Binding Title}"
                      TextWrapping="Wrap"
+                     Foreground="Black"
                      Margin="0,0,10,0"/>
 
         </DockPanel>
       </Border>
 
-    </DataTemplate>
-  </ItemsControl.ItemTemplate>
-</ItemsControl>
-
-      </ScrollViewer>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
 
     </DockPanel>
   </Border>

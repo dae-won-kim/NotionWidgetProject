@@ -4,21 +4,21 @@ var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
 // ---- 더미 상태 옵션 (DB 옵션 순서 = 순환 순서) ----
-var statusOptions = new List<(string Id, string Name)>
+var statusOptions = new List<(string Id, string Name, string Color)>
 {
-    ("opt_a", "To-do"),
-    ("opt_b", "In progress"),
-    ("opt_c", "Done"),
+    ("opt_a", "To-do", "blue"),
+    ("opt_b", "In progress", "yellow"),
+    ("opt_c", "Done", "green"),
 };
 
 // ---- 더미 아이템 저장소 (메모리) ----
 var items = new Dictionary<string, DummyItem>
 {
-    ["page1"] = new DummyItem { Id="page1", Title="Complete the Galle project", StatusId="opt_a" },
-    ["page2"] = new DummyItem { Id="page2", Title="Go to the gym on Tuesday", StatusId="opt_c" },
-    ["page3"] = new DummyItem { Id="page3", Title="Test ㅁㄴㅊㅁㄴA", StatusId="opt_a" },
-    ["page4"] = new DummyItem { Id="page4", Title="Test 123 b", StatusId="opt_c" },
-    ["page5"] = new DummyItem { Id="page5", Title="Party TIME", StatusId="opt_c" },
+    ["page1"] = new DummyItem { Id="page1", Title="Complete the Galle project", StatusId="opt_a", IsChecked=false },
+    ["page2"] = new DummyItem { Id="page2", Title="Go to the gym on Tuesday", StatusId="opt_c", IsChecked=true },
+    ["page3"] = new DummyItem { Id="page3", Title="Test ㅁㄴㅊㅁㄴA", StatusId="opt_a", IsChecked=false },
+    ["page4"] = new DummyItem { Id="page4", Title="Test 123 b", StatusId="opt_c", IsChecked=true },
+    ["page5"] = new DummyItem { Id="page5", Title="Party TIME", StatusId="opt_c", IsChecked=false },
 };
 
 app.MapGet("/", () => Results.Ok(new { app = "widget-api", ok = true }));
@@ -33,11 +33,12 @@ app.MapPost("/v1/widgets/{widgetId}/items/query", (string widgetId) =>
         {
             id = x.Id,
             title = x.Title,
+            isChecked = x.IsChecked,
             statusId = x.StatusId,
             status = statusOptions.First(o => o.Id == x.StatusId).Name,
             lastEditedTime = x.LastEditedTime.ToString("o")
         }),
-        statusOptions = statusOptions.Select(o => new { id = o.Id, name = o.Name })
+        statusOptions = statusOptions.Select(o => new { id = o.Id, name = o.Name, color = o.Color })
     };
 
     return Results.Ok(new { ok = true, data });
@@ -101,6 +102,7 @@ sealed class DummyItem
 {
     public string Id { get; set; } = "";
     public string Title { get; set; } = "";
+    public bool IsChecked { get; set; }
     public string StatusId { get; set; } = "opt_a";
     public DateTimeOffset LastEditedTime { get; set; } = DateTimeOffset.Now;
 }

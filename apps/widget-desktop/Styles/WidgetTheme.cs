@@ -24,16 +24,17 @@ public static class WidgetTheme
     public static readonly Color BgItemHover = Color.Parse("#EFEFEF");
     public static readonly Color BorderItem = Color.Parse("#E0E0E0"); // 부드러운 테두리
     
-    public static readonly IBrush BgWindowBrush = Brushes.White;
-    public static readonly IBrush BgItemBrush = new SolidColorBrush(BgItem);
-    public static readonly IBrush BgItemHoverBrush = new SolidColorBrush(BgItemHover);
-    public static readonly IBrush BorderItemBrush = new SolidColorBrush(BorderItem);
+    // ✅ x:Static에서 타입 변환 이슈 방지: 구체 타입으로 고정
+    public static readonly SolidColorBrush BgWindowBrush = new SolidColorBrush(Colors.White);
+    public static readonly SolidColorBrush BgItemBrush = new SolidColorBrush(BgItem);
+    public static readonly SolidColorBrush BgItemHoverBrush = new SolidColorBrush(BgItemHover);
+    public static readonly SolidColorBrush BorderItemBrush = new SolidColorBrush(BorderItem);
 
     // 텍스트: 검은색 및 진한 회색
     public static readonly Color TextPrimary = Color.Parse("#37352F"); // 노션 기본 검정색
-    public static readonly IBrush TextPrimaryBrush = new SolidColorBrush(TextPrimary);
+    public static readonly SolidColorBrush TextPrimaryBrush = new SolidColorBrush(TextPrimary);
     public static readonly Color TextSecondary = Color.Parse("#787774");
-    public static readonly IBrush TextSecondaryBrush = new SolidColorBrush(TextSecondary);
+    public static readonly SolidColorBrush TextSecondaryBrush = new SolidColorBrush(TextSecondary);
 
     /* ======================
        Shape
