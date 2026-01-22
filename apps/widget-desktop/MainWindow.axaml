@@ -107,7 +107,6 @@
 
           <!-- ✅ 체크박스 -->
           <CheckBox IsChecked="{Binding IsChecked}"
-                    Background="Red"
                     VerticalAlignment="Center"
                     Margin="0,0,10,0"/>
 

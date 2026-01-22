@@ -4,11 +4,11 @@ var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
 // ---- 더미 상태 옵션 (DB 옵션 순서 = 순환 순서) ----
-var statusOptions = new List<(string Id, string Name, string Color)>
+var statusOptions = new List<(string Id, string Name)>
 {
-    ("opt_a", "To-do", "blue"),
-    ("opt_b", "In progress", "yellow"),
-    ("opt_c", "Done", "green"),
+    ("opt_a", "To-do"),
+    ("opt_b", "In progress"),
+    ("opt_c", "Done"),
 };
 
 // ---- 더미 아이템 저장소 (메모리) ----
@@ -38,7 +38,7 @@ app.MapPost("/v1/widgets/{widgetId}/items/query", (string widgetId) =>
             status = statusOptions.First(o => o.Id == x.StatusId).Name,
             lastEditedTime = x.LastEditedTime.ToString("o")
         }),
-        statusOptions = statusOptions.Select(o => new { id = o.Id, name = o.Name, color = o.Color })
+        statusOptions = statusOptions.Select(o => new { id = o.Id, name = o.Name })
     };
 
     return Results.Ok(new { ok = true, data });
