@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:models="clr-namespace:WidgetDesktop.Models"
         xmlns:conv="clr-namespace:WidgetDesktop.Converters"
@@ -7,14 +7,11 @@
         Topmost="True"
         Title="Checklist Widget">
 
-  <!-- ✅ 리소스는 Window 내부에만 -->
   <Window.Resources>
     <conv:NotionColorToBrushConverter x:Key="NotionColorToBrushConverter"/>
   </Window.Resources>
 
-  <!-- ✅ Styles도 Window 내부에만 -->
   <Window.Styles>
-
     <Style Selector="Border.row">
       <Setter Property="CornerRadius" Value="999"/>
       <Setter Property="BorderThickness" Value="1"/>
@@ -24,6 +21,24 @@
 
     <Style Selector="Border.row:pointerover">
       <Setter Property="Background" Value="#22FFFFFF"/>
+    </Style>
+
+    <Style Selector="Border.drag-handle">
+      <Setter Property="Width" Value="18"/>
+      <Setter Property="Padding" Value="2,0"/>
+      <Setter Property="Margin" Value="0,0,10,0"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Cursor" Value="SizeAll"/>
+      <Setter Property="VerticalAlignment" Value="Stretch"/>
+      <Setter Property="HorizontalAlignment" Value="Left"/>
+    </Style>
+
+    <Style Selector="TextBlock.drag-handle-text">
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="Foreground" Value="#9A9A9A"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="HorizontalAlignment" Value="Center"/>
     </Style>
 
     <Style Selector="Button.status">
@@ -36,14 +51,13 @@
       <Setter Property="Opacity" Value="1"/>
     </Style>
 
-    <Style Selector="Button.status:pointerover">
+    <Style Selector="Button.status.hover">
       <Setter Property="Opacity" Value="0.90"/>
     </Style>
 
-    <Style Selector="Button.status:pressed">
+    <Style Selector="Button.status.pressed">
       <Setter Property="Opacity" Value="0.78"/>
     </Style>
-
   </Window.Styles>
 
   <Border Padding="12"
@@ -58,67 +72,52 @@
                  FontWeight="Bold"
                  Margin="0,0,0,12"/>
 
-      <!-- ✅ DEBUG: 이 문구가 보이면 최신 XAML이 로드된 것 -->
-      <TextBlock DockPanel.Dock="Top"
-                 Text="(DEBUG) XAML LOADED"
-                 Opacity="0.7"
-                 Margin="0,0,0,8"/>
-
-      <!-- 로딩/에러 표시 -->
+      <!-- Error display -->
       <TextBlock Name="ErrorText"
                  DockPanel.Dock="Top"
-                 IsVisible="True"
+                 IsVisible="False"
                  TextWrapping="Wrap"
-                 Background="#FFFFCC"
-                 Foreground="Black"
+                 Foreground="Red"
                  Margin="0,0,0,12"/>
 
       <ListBox Name="TodoItems"
                BorderThickness="0"
-               Background="#10FF0000"
-               MinHeight="200">
+               MinHeight="200"
+               PointerReleased="List_PointerReleased">
         <ListBox.ItemTemplate>
           <DataTemplate x:DataType="models:ItemDto">
+            <Border Classes="row"
+                    Padding="12"
+                    Margin="0,0,0,8"
+                    PointerMoved="Row_PointerMoved"
+                    PointerReleased="Row_PointerReleased">
+              <DockPanel>
+                <!-- Drag handle -->
+                <Border Classes="drag-handle"
+                        DockPanel.Dock="Left"
+                        PointerPressed="DragHandle_PointerPressed">
+                  <TextBlock Classes="drag-handle-text"
+                             Text="|||"/>
+                </Border>
 
-      <!-- 체크리스트 한 줄 -->
-      <Border Classes="row"
-              Padding="12"
-              Margin="0,0,0,8"
-              PointerPressed="Row_PointerPressed"
-              PointerMoved="Row_PointerMoved"
-              PointerReleased="Row_PointerReleased">
+                <!-- Status button -->
+                <Button Classes="status"
+                        DockPanel.Dock="Right"
+                        Background="{Binding StatusColor,
+                          Converter={StaticResource NotionColorToBrushConverter}}"
+                        Content="{Binding Status}"
+                        Click="StatusButton_Click"
+                        PointerEntered="StatusButton_PointerEntered"
+                        PointerExited="StatusButton_PointerExited"
+                        PointerPressed="StatusButton_PointerPressed"
+                        PointerReleased="StatusButton_PointerReleased"/>
 
-        <DockPanel>
-
-          <!-- ✅ DEBUG: 템플릿이 실제로 렌더링되면 이 글자가 반드시 보임 -->
-          <TextBlock DockPanel.Dock="Top"
-                     Text="ROW"
-                     Foreground="Red"
-                     Margin="0,0,0,6"/>
-
-          <!-- ✅ 여기입니다 -->
-          <Button Classes="status"
-                  DockPanel.Dock="Right"
-                  Background="{Binding StatusColor,
-                    Converter={StaticResource NotionColorToBrushConverter}}"
-                  Content="{Binding Status}"
-                  Click="StatusButton_Click"
-                  PointerPressed="StatusButton_RightPressed"/>
-
-          <!-- ✅ 체크박스 -->
-          <CheckBox IsChecked="{Binding IsChecked}"
-                    VerticalAlignment="Center"
-                    Margin="0,0,10,0"/>
-
-          <!-- 체크리스트 제목 -->
-          <TextBlock Text="{Binding Title}"
-                     TextWrapping="Wrap"
-                     Foreground="Black"
-                     Margin="0,0,10,0"/>
-
-        </DockPanel>
-      </Border>
-
+                <TextBlock Text="{Binding Title}"
+                           TextWrapping="Wrap"
+                           Foreground="Black"
+                           Margin="0,0,10,0"/>
+              </DockPanel>
+            </Border>
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>

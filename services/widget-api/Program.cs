@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-// ---- 더미 상태 옵션 (DB 옵션 순서 = 순환 순서) ----
+// ---- ?��? ?�태 ?�션 (DB ?�션 ?�서 = ?�환 ?�서) ----
 var statusOptions = new List<(string Id, string Name)>
 {
     ("opt_a", "To-do"),
@@ -11,12 +11,12 @@ var statusOptions = new List<(string Id, string Name)>
     ("opt_c", "Done"),
 };
 
-// ---- 더미 아이템 저장소 (메모리) ----
+// ---- ?��? ?�이???�?�소 (메모�? ----
 var items = new Dictionary<string, DummyItem>
 {
     ["page1"] = new DummyItem { Id="page1", Title="Complete the Galle project", StatusId="opt_a", IsChecked=false },
     ["page2"] = new DummyItem { Id="page2", Title="Go to the gym on Tuesday", StatusId="opt_c", IsChecked=true },
-    ["page3"] = new DummyItem { Id="page3", Title="Test ㅁㄴㅊㅁㄴA", StatusId="opt_a", IsChecked=false },
+    ["page3"] = new DummyItem { Id="page3", Title="Test ?�ㄴ?�ㅁ?�A", StatusId="opt_a", IsChecked=false },
     ["page4"] = new DummyItem { Id="page4", Title="Test 123 b", StatusId="opt_c", IsChecked=true },
     ["page5"] = new DummyItem { Id="page5", Title="Party TIME", StatusId="opt_c", IsChecked=false },
 };
@@ -24,7 +24,7 @@ var items = new Dictionary<string, DummyItem>
 app.MapGet("/", () => Results.Ok(new { app = "widget-api", ok = true }));
 app.MapGet("/health", () => Results.Ok(new { ok = true }));
 
-// (1) 조회: 위젯이 표시할 리스트
+// (1) 조회: ?�젯???�시??리스??
 app.MapPost("/v1/widgets/{widgetId}/items/query", (string widgetId) =>
 {
     var data = new
@@ -44,7 +44,7 @@ app.MapPost("/v1/widgets/{widgetId}/items/query", (string widgetId) =>
     return Results.Ok(new { ok = true, data });
 });
 
-// (2) 좌클릭: 다음 status로 순환
+// (2) 좌클�? ?�음 status�??�환
 app.MapPost("/v1/widgets/{widgetId}/items/{itemId}/status/next",
     (string widgetId, string itemId) =>
 {
@@ -69,7 +69,7 @@ app.MapPost("/v1/widgets/{widgetId}/items/{itemId}/status/next",
     return Results.Ok(new { ok = true, data });
 });
 
-// (3) 우클릭: statusId로 지정
+// (3) ?�클�? statusId�?지??
 app.MapMethods("/v1/widgets/{widgetId}/items/{itemId}/status", new[] { "PATCH" },
     ([FromRoute] string widgetId, [FromRoute] string itemId, [FromBody] StatusSetBody body) =>
 {
@@ -97,7 +97,7 @@ app.MapMethods("/v1/widgets/{widgetId}/items/{itemId}/status", new[] { "PATCH" }
 
 app.Run();
 
-// ---- 내부 모델 ----
+// ---- ?��? 모델 ----
 sealed class DummyItem
 {
     public string Id { get; set; } = "";
@@ -121,3 +121,5 @@ static class ListExt
         return -1;
     }
 }
+
+

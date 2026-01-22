@@ -6,9 +6,8 @@
        Window
        ====================== -->
   <Style Selector="Window">
-
     <Setter Property="Background"
-            Value="{x:Static theme:WidgetTheme.BgWindowBrush}"/>
+            Value="#FFFFFF"/>
     <Setter Property="FontFamily"
             Value="{x:Static theme:WidgetTheme.FontFamilyPrimary}"/>
   </Style>
@@ -60,12 +59,12 @@
     <Setter Property="Opacity" Value="1"/>
   </Style>
 
-  <Style Selector="Button.status:pointerover">
+  <Style Selector="Button.status.hover">
     <Setter Property="Opacity"
             Value="{x:Static theme:WidgetTheme.StatusHoverOpacity}"/>
   </Style>
 
-  <Style Selector="Button.status:pressed">
+  <Style Selector="Button.status.pressed">
     <Setter Property="Opacity"
             Value="{x:Static theme:WidgetTheme.StatusPressedOpacity}"/>
   </Style>

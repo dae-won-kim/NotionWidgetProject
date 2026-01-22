@@ -1,12 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Threading;
+using Avalonia.VisualTree;
 using WidgetDesktop.Models;
 using WidgetDesktop.Services;
 
@@ -15,33 +14,35 @@ namespace WidgetDesktop;
 public partial class MainWindow : Window
 {
     private const string WidgetId = "w_1";
-    private readonly WidgetApiClient _api = new("http://localhost:5055");
+    private static readonly string ApiBaseUrl =
+        Environment.GetEnvironmentVariable("WIDGET_API_BASE_URL") ?? "http://localhost:5183";
+    private readonly WidgetApiClient _api = new(ApiBaseUrl);
 
     private ObservableCollection<ItemDto> _items = new();
 
-    // ✅ Notion status option 순서(정렬 우선순위)
-    private Dictionary<string, int> _statusRank = new();
-
-    // ✅ StatusId -> Notion color
     private Dictionary<string, string> _statusIdToColor = new();
+    private List<StatusOptionDto> _statusOptions = new();
 
     // Drag state
     private ItemDto? _draggingItem;
+    private bool _hasManualOrder;
 
     public MainWindow()
     {
         InitializeComponent();
 
-        // ✅ XAML 렌더링/바인딩 자체가 되는지 확인용 기본 항목(로드 후 덮어씀)
-        var initial = new ObservableCollection<ItemDto>
+        _items.Add(new ItemDto
         {
-            new() { Id = "local_loading", Title = "(loading...)", Status = "", StatusId = "opt_a", IsChecked = false }
-        };
-        TodoItems.ItemsSource = initial;
+            Id = "local_loading",
+            Title = "(loading...)",
+            Status = "",
+            StatusId = "opt_a",
+            IsChecked = false
+        });
+        TodoItems.ItemsSource = _items;
 
-        // ✅ DEBUG: 생성자에서 컨트롤 참조/바인딩이 실제로 동작하는지 화면에 표시
-        ErrorText.IsVisible = true;
-        ErrorText.Text = $"DEBUG: ctor bound items = {initial.Count}";
+        ErrorText.IsVisible = false;
+        ErrorText.Text = "";
 
         Opened += async (_, __) =>
         {
@@ -51,59 +52,42 @@ public partial class MainWindow : Window
                 ErrorText.Text = "";
 
                 var data = await _api.QueryItemsAsync(WidgetId);
+                _statusOptions = data.StatusOptions.ToList();
 
-                // 1) status 순서(옵션 배열 순서 그대로)
-                _statusRank = data.StatusOptions
-                    .Select((opt, idx) => (opt.Id, idx))
-                    .ToDictionary(x => x.Id, x => x.idx);
-
-                // 2) statusId -> color
                 _statusIdToColor = data.StatusOptions
                     .Where(o => !string.IsNullOrWhiteSpace(o.Id))
                     .ToDictionary(o => o.Id, o => (o.Color ?? "gray"));
 
-                // 3) 아이템 로드 + StatusColor 채우기 + UI 순서 초기화
-                int order = 0;
                 _items.Clear();
                 foreach (var it in data.Items)
                 {
-                    it.UiOrder = order++;
                     it.StatusColor = ResolveColor(it.StatusId);
                     _items.Add(it);
                 }
 
-                // 정렬 없이 바로 바인딩(ObservableCollection)
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    TodoItems.ItemsSource = null;
-                    TodoItems.ItemsSource = _items;
-                });
+                ApplyDefaultStatusSortIfNeeded();
 
-                ErrorText.IsVisible = true;
-                ErrorText.Text =
-                    $"DEBUG: loaded items = {_items.Count}\n" +
-                    $"DEBUG: TodoItems type = {TodoItems.GetType().FullName}\n" +
-                    $"DEBUG: ItemsSource type = {TodoItems.ItemsSource?.GetType().FullName ?? "(null)"}";
+                ErrorText.IsVisible = false;
+                ErrorText.Text = "";
             }
             catch (Exception ex)
             {
-                // ✅ 실패해도 화면에 원인을 표시
                 ErrorText.IsVisible = true;
                 ErrorText.Text = $"Failed to load items.\n{ex.GetType().Name}: {ex.Message}";
 
-                // 로딩 표시 유지
                 _items.Clear();
-                TodoItems.ItemsSource = new List<ItemDto>
+                _items.Add(new ItemDto
                 {
-                    new() { Id = "local_error", Title = "(no items)", Status = "", StatusId = "opt_a", IsChecked = false }
-                };
+                    Id = "local_error",
+                    Title = "(no items)",
+                    Status = "",
+                    StatusId = "opt_a",
+                    IsChecked = false
+                });
             }
         };
     }
 
-    /* -----------------------
-       Window Drag (버튼 클릭이면 드래그 금지)
-       ----------------------- */
     private void WindowDragArea_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
@@ -122,9 +106,6 @@ public partial class MainWindow : Window
         BeginMoveDrag(e);
     }
 
-    /* -----------------------
-       Status LEFT CLICK: next
-       ----------------------- */
     private async void StatusButton_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is not Button b || b.DataContext is not ItemDto item) return;
@@ -134,51 +115,93 @@ public partial class MainWindow : Window
         item.Status = updated.Status;
         item.StatusId = updated.StatusId;
         item.LastEditedTime = updated.LastEditedTime;
-
-        // ✅ 색상도 즉시 갱신
         item.StatusColor = ResolveColor(item.StatusId);
-
-        // (선택) status 바뀌면 해당 그룹에서 최상단으로 올리기
-        item.UiOrder = 0;
-        ReindexUiOrder(item.StatusId);
-
-        SortAndBind();
+        ApplyDefaultStatusSortIfNeeded();
+        ClearStatusButtonEffects();
         e.Handled = true;
     }
 
-    /* -----------------------
-       Status RIGHT CLICK: menu
-       (여기는 기존 메뉴 로직 붙이면 됨)
-       ----------------------- */
-    private void StatusButton_RightPressed(object? sender, PointerPressedEventArgs e)
+    private void StatusButton_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        if (sender is not Button b || b.DataContext is not ItemDto item) return;
+        b.Classes.Add("pressed");
         if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed) return;
-        // 메뉴 로직(이전 버전) 넣어도 되고,
-        // 지금은 크래시 해결 + 색상 적용이 핵심이니 생략 가능
+        if (_statusOptions.Count == 0) return;
+
+        var menuItems = _statusOptions.Select(opt =>
+        {
+            var mi = new MenuItem { Header = opt.Name };
+            mi.Click += async (_, __) =>
+            {
+                var updated = await _api.StatusSetAsync(WidgetId, item.Id, opt.Id);
+                item.Status = updated.Status;
+                item.StatusId = updated.StatusId;
+                item.LastEditedTime = updated.LastEditedTime;
+                item.StatusColor = ResolveColor(item.StatusId);
+                ApplyDefaultStatusSortIfNeeded();
+                ClearStatusButtonEffects();
+            };
+            return mi;
+        }).ToList();
+
+        var menu = new ContextMenu
+        {
+            ItemsSource = menuItems
+        };
+
+        menu.Open(b);
         e.Handled = true;
     }
 
-    /* -----------------------
-       Drag reorder (같은 status 그룹 안에서만)
-       ----------------------- */
-    private void Row_PointerPressed(object? sender, PointerPressedEventArgs e)
+    private void StatusButton_PointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (sender is Button b)
+            b.Classes.Remove("pressed");
+    }
+
+    private void StatusButton_PointerEntered(object? sender, PointerEventArgs e)
+    {
+        if (sender is Button b)
+            b.Classes.Add("hover");
+    }
+
+    private void StatusButton_PointerExited(object? sender, PointerEventArgs e)
+    {
+        if (sender is Button b)
+        {
+            b.Classes.Remove("hover");
+            b.Classes.Remove("pressed");
+        }
+    }
+
+    private void DragHandle_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
         if (sender is Border bd && bd.DataContext is ItemDto item)
+        {
             _draggingItem = item;
+            e.Handled = true;
+        }
     }
 
     private void Row_PointerMoved(object? sender, PointerEventArgs e)
     {
         if (_draggingItem == null) return;
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            _draggingItem = null;
+            return;
+        }
         if (sender is not Border bd || bd.DataContext is not ItemDto target) return;
         if (target == _draggingItem) return;
 
-        // status는 바꾸지 않고, 같은 status 안에서만 순서 변경
-        if (target.StatusId != _draggingItem.StatusId) return;
+        var fromIndex = _items.IndexOf(_draggingItem);
+        var toIndex = _items.IndexOf(target);
+        if (fromIndex < 0 || toIndex < 0) return;
 
-        (target.UiOrder, _draggingItem.UiOrder) = (_draggingItem.UiOrder, target.UiOrder);
-        SortAndBind();
+        _items.Move(fromIndex, toIndex);
+        _hasManualOrder = true;
+        ReindexUiOrderAll();
     }
 
     private void Row_PointerReleased(object? sender, PointerReleasedEventArgs e)
@@ -186,39 +209,79 @@ public partial class MainWindow : Window
         _draggingItem = null;
     }
 
-    /* -----------------------
-       Sorting / Binding
-       ----------------------- */
-    private void SortAndBind()
+    private void List_PointerReleased(object? sender, PointerReleasedEventArgs e)
     {
-        var sorted = _items
-            .OrderBy(i => GetRank(i.StatusId))
-            .ThenBy(i => i.UiOrder)
-            .ThenByDescending(i => ParseEdited(i.LastEditedTime)) // 같은 UiOrder라도 최신 우선(안전)
-            .ToList();
-
-        TodoItems.ItemsSource = sorted;
+        _draggingItem = null;
     }
-
-    private int GetRank(string? statusId)
-        => statusId != null && _statusRank.TryGetValue(statusId, out var r) ? r : int.MaxValue;
 
     private string ResolveColor(string? statusId)
         => statusId != null && _statusIdToColor.TryGetValue(statusId, out var c) ? c : "gray";
 
-    private void ReindexUiOrder(string? statusId)
+    private void ReindexUiOrderAll()
     {
-        if (statusId == null) return;
-
-        var group = _items
-            .Where(i => i.StatusId == statusId)
-            .OrderBy(i => i.UiOrder)
-            .ToList();
-
-        for (int i = 0; i < group.Count; i++)
-            group[i].UiOrder = i;
+        for (int i = 0; i < _items.Count; i++)
+            _items[i].UiOrder = i;
     }
 
-    private static DateTimeOffset ParseEdited(string? iso)
-        => DateTimeOffset.TryParse(iso, out var dto) ? dto : DateTimeOffset.MinValue;
+    private void ApplyDefaultStatusSortIfNeeded()
+    {
+        if (_hasManualOrder) return;
+        ApplyDefaultStatusSort();
+    }
+
+    private void ApplyDefaultStatusSort()
+    {
+        var ordered = _items
+            .Select((item, index) => new
+            {
+                item,
+                index,
+                priority = GetStatusPriority(item.Status)
+            })
+            .OrderBy(x => x.priority)
+            .ThenBy(x => x.index)
+            .Select(x => x.item)
+            .ToList();
+
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            var item = ordered[i];
+            var currentIndex = _items.IndexOf(item);
+            if (currentIndex != i)
+                _items.Move(currentIndex, i);
+        }
+
+        ReindexUiOrderAll();
+    }
+
+    private static int GetStatusPriority(string? status)
+    {
+        var key = NormalizeStatusKey(status);
+        return key switch
+        {
+            "todo" => 0,
+            "inprogress" => 1,
+            "done" => 2,
+            _ => 99
+        };
+    }
+
+    private static string NormalizeStatusKey(string? status)
+    {
+        if (string.IsNullOrWhiteSpace(status)) return "";
+        var chars = status.Trim().ToLowerInvariant().Where(char.IsLetterOrDigit).ToArray();
+        return new string(chars);
+    }
+
+    private void ClearStatusButtonEffects()
+    {
+        foreach (var button in TodoItems.GetVisualDescendants().OfType<Button>())
+        {
+            if (!button.Classes.Contains("status")) continue;
+            button.Classes.Remove("pressed");
+            if (!button.IsPointerOver)
+                button.Classes.Remove("hover");
+        }
+    }
+
 }
