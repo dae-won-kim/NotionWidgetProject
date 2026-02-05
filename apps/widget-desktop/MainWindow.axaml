@@ -2,25 +2,97 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:models="clr-namespace:WidgetDesktop.Models"
         xmlns:conv="clr-namespace:WidgetDesktop.Converters"
+        xmlns:theme="clr-namespace:WidgetDesktop.Styles"
         x:Class="WidgetDesktop.MainWindow"
         Width="360" Height="560"
         Topmost="True"
-        Title="Checklist Widget">
+        Title="Checklist Widget"
+        PointerMoved="Window_PointerMoved"
+        PointerReleased="Window_PointerReleased">
 
   <Window.Resources>
     <conv:NotionColorToBrushConverter x:Key="NotionColorToBrushConverter"/>
+    <!-- Override default ListBoxItem hover/selection brushes to be transparent -->
+    <SolidColorBrush x:Key="SystemControlHighlightListLowBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="SystemControlHighlightListMediumBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="SystemControlHighlightListAccentLowBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="ListBoxItemPointerOverBackground" Color="Transparent" />
+    <SolidColorBrush x:Key="ListBoxItemSelectedBackground" Color="Transparent" />
+    <SolidColorBrush x:Key="ListBoxItemSelectedPointerOverBackground" Color="Transparent" />
   </Window.Resources>
 
   <Window.Styles>
+    <Style Selector="ListBoxItem">
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="Margin" Value="0"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="RenderTransform" Value="none"/>
+      <!-- 기본 상태에서는 RenderTransform 트랜지션 없음 (즉시 이동을 위해) -->
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+        </Transitions>
+      </Setter>
+    </Style>
+
+    <Style Selector="ListBoxItem.animating">
+      <Setter Property="Transitions">
+        <Transitions>
+          <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.3" Easing="CubicEaseOut"/>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+        </Transitions>
+      </Setter>
+    </Style>
+
+    <Style Selector="ListBoxItem.dragging">
+      <Setter Property="Opacity" Value="0.9"/>
+      <Setter Property="ZIndex" Value="100"/>
+      <Setter Property="RenderTransform" Value="scale(1.05)"/>
+    </Style>
+
+    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ListBoxItem:selected:focus /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ListBoxItem:selected:focus:pointerover /template/ ContentPresenter">
+       <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+    <Style Selector="ListBoxItem:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
     <Style Selector="Border.row">
       <Setter Property="CornerRadius" Value="999"/>
       <Setter Property="BorderThickness" Value="1"/>
       <Setter Property="BorderBrush" Value="#E0E0E0"/>
       <Setter Property="Background" Value="#F7F7F7"/>
+      <Setter Property="Transitions">
+        <Transitions>
+          <BrushTransition Property="Background" Duration="0:0:0.2"/>
+        </Transitions>
+      </Setter>
     </Style>
 
     <Style Selector="Border.row:pointerover">
-      <Setter Property="Background" Value="#22FFFFFF"/>
+      <Setter Property="Background" Value="{x:Static theme:WidgetTheme.BgItemHoverBrush}"/>
+    </Style>
+
+    <Style Selector="ListBoxItem:selected Border.row">
+      <Setter Property="Background" Value="{x:Static theme:WidgetTheme.BgItemHoverBrush}"/>
+    </Style>
+
+    <Style Selector="ListBoxItem:pressed Border.row">
+      <Setter Property="Background" Value="{x:Static theme:WidgetTheme.BgItemHoverBrush}"/>
     </Style>
 
     <Style Selector="Border.drag-handle">
@@ -33,12 +105,11 @@
       <Setter Property="HorizontalAlignment" Value="Left"/>
     </Style>
 
-    <Style Selector="TextBlock.drag-handle-text">
-      <Setter Property="FontSize" Value="11"/>
-      <Setter Property="FontWeight" Value="Bold"/>
-      <Setter Property="Foreground" Value="#9A9A9A"/>
-      <Setter Property="VerticalAlignment" Value="Center"/>
-      <Setter Property="HorizontalAlignment" Value="Center"/>
+    <Style Selector="Border.drag-handle Rectangle">
+      <Setter Property="Fill" Value="#9A9A9A"/>
+      <Setter Property="Height" Value="1.5"/>
+      <Setter Property="Width" Value="12"/>
+      <Setter Property="Margin" Value="0,1"/>
     </Style>
 
     <Style Selector="Button.status">
@@ -83,21 +154,29 @@
       <ListBox Name="TodoItems"
                BorderThickness="0"
                MinHeight="200"
+               Background="Transparent"
                PointerReleased="List_PointerReleased">
+        <ListBox.ItemsPanel>
+          <ItemsPanelTemplate>
+            <!-- 가상화를 끄고 일반 StackPanel을 사용하여 애니메이션 끊김 방지 -->
+            <StackPanel />
+          </ItemsPanelTemplate>
+        </ListBox.ItemsPanel>
         <ListBox.ItemTemplate>
           <DataTemplate x:DataType="models:ItemDto">
             <Border Classes="row"
                     Padding="12"
-                    Margin="0,0,0,8"
-                    PointerMoved="Row_PointerMoved"
-                    PointerReleased="Row_PointerReleased">
+                    Margin="0,0,0,8">
               <DockPanel>
                 <!-- Drag handle -->
                 <Border Classes="drag-handle"
                         DockPanel.Dock="Left"
                         PointerPressed="DragHandle_PointerPressed">
-                  <TextBlock Classes="drag-handle-text"
-                             Text="|||"/>
+                  <StackPanel VerticalAlignment="Center">
+                    <Rectangle/>
+                    <Rectangle/>
+                    <Rectangle/>
+                  </StackPanel>
                 </Border>
 
                 <!-- Status button -->

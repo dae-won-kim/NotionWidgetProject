@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-// ---- ?”ë? ?íƒœ ?µì…˜ (DB ?µì…˜ ?œì„œ = ?œí™˜ ?œì„œ) ----
 var statusOptions = new List<(string Id, string Name)>
 {
     ("opt_a", "To-do"),
@@ -11,12 +10,11 @@ var statusOptions = new List<(string Id, string Name)>
     ("opt_c", "Done"),
 };
 
-// ---- ?”ë? ?„ì´???€?¥ì†Œ (ë©”ëª¨ë¦? ----
 var items = new Dictionary<string, DummyItem>
 {
     ["page1"] = new DummyItem { Id="page1", Title="Complete the Galle project", StatusId="opt_a", IsChecked=false },
     ["page2"] = new DummyItem { Id="page2", Title="Go to the gym on Tuesday", StatusId="opt_c", IsChecked=true },
-    ["page3"] = new DummyItem { Id="page3", Title="Test ?ã„´?Šã…?´A", StatusId="opt_a", IsChecked=false },
+    ["page3"] = new DummyItem { Id="page3", Title="Test ì¤‘ì¸ ê²ƒ", StatusId="opt_a", IsChecked=false },
     ["page4"] = new DummyItem { Id="page4", Title="Test 123 b", StatusId="opt_c", IsChecked=true },
     ["page5"] = new DummyItem { Id="page5", Title="Party TIME", StatusId="opt_c", IsChecked=false },
 };
@@ -24,7 +22,6 @@ var items = new Dictionary<string, DummyItem>
 app.MapGet("/", () => Results.Ok(new { app = "widget-api", ok = true }));
 app.MapGet("/health", () => Results.Ok(new { ok = true }));
 
-// (1) ì¡°íšŒ: ?„ì ¯???œì‹œ??ë¦¬ìŠ¤??
 app.MapPost("/v1/widgets/{widgetId}/items/query", (string widgetId) =>
 {
     var data = new
@@ -44,7 +41,6 @@ app.MapPost("/v1/widgets/{widgetId}/items/query", (string widgetId) =>
     return Results.Ok(new { ok = true, data });
 });
 
-// (2) ì¢Œí´ë¦? ?¤ìŒ statusë¡??œí™˜
 app.MapPost("/v1/widgets/{widgetId}/items/{itemId}/status/next",
     (string widgetId, string itemId) =>
 {
@@ -69,7 +65,6 @@ app.MapPost("/v1/widgets/{widgetId}/items/{itemId}/status/next",
     return Results.Ok(new { ok = true, data });
 });
 
-// (3) ?°í´ë¦? statusIdë¡?ì§€??
 app.MapMethods("/v1/widgets/{widgetId}/items/{itemId}/status", new[] { "PATCH" },
     ([FromRoute] string widgetId, [FromRoute] string itemId, [FromBody] StatusSetBody body) =>
 {
@@ -97,7 +92,7 @@ app.MapMethods("/v1/widgets/{widgetId}/items/{itemId}/status", new[] { "PATCH" }
 
 app.Run();
 
-// ---- ?´ë? ëª¨ë¸ ----
+// ---- ?Â´Ã«? Ã«ÅÂ¨Ã«ÂÂ¸ ----
 sealed class DummyItem
 {
     public string Id { get; set; } = "";

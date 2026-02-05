@@ -8,7 +8,7 @@ public static class WidgetTheme
     /* ======================
        Fonts
        ====================== */
-    private const string FontFamilyName = "Segoe UI";
+    private const string FontFamilyName = "Malgun Gothic";
     public static readonly FontFamily FontFamilyPrimary = new FontFamily(FontFamilyName);
 
     public const double FontSizeTitle = 18;
@@ -21,7 +21,7 @@ public static class WidgetTheme
     // 배경: 완전한 흰색 또는 아주 밝은 회색
     public static readonly Color BgWindow = Colors.White;
     public static readonly Color BgItem = Color.Parse("#F7F7F7"); // 아주 연한 회색 (아이템 구분용)
-    public static readonly Color BgItemHover = Color.Parse("#EFEFEF");
+    public static readonly Color BgItemHover = Color.Parse("#E0E0E0"); // 좀 더 진한 회색으로 변경 (기존 #EFEFEF)
     public static readonly Color BorderItem = Color.Parse("#E0E0E0"); // 부드러운 테두리
     
     // ✅ x:Static에서 타입 변환 이슈 방지: 구체 타입으로 고정
