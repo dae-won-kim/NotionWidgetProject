@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet run *)",
+      "Bash(echo \"Backend PID: $!\")",
+      "Bash(powershell -Command ' *)",
+      "Bash(taskkill /F /IM WidgetDesktop.exe)",
+      "Bash(taskkill /F /IM widget-api.exe)",
+      "Bash(powershell -Command 'Get-Process | Where-Object { $_.Name -match '\\\\''widget|dotnet'\\\\'' } | Select-Object Id, Name, CPU | Format-Table -AutoSize')",
+      "Bash(powershell -Command \"Get-Process WidgetDesktop -ErrorAction SilentlyContinue | Select-Object Id, Name\")",
+      "Bash(powershell -Command \"Stop-Process -Name 'WidgetDesktop' -Force -ErrorAction SilentlyContinue; Stop-Process -Name 'widget-api' -Force -ErrorAction SilentlyContinue; Stop-Process -Name 'dotnet' -Force -ErrorAction SilentlyContinue\")",
+      "Bash(powershell -Command \"Get-Process WidgetDesktop -ErrorAction SilentlyContinue | Select-Object Id,Name\")",
+      "Bash(powershell -Command \"Stop-Process -Name 'WidgetDesktop' -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 1; Write-Host 'Stopped'\")"
+    ]
+  }
+}

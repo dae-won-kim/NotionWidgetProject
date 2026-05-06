@@ -125,7 +125,7 @@ public partial class MainWindow : Window
         item.StatusId = updated.StatusId;
         item.LastEditedTime = updated.LastEditedTime;
         item.StatusColor = ResolveColor(item.StatusId);
-        ApplyDefaultStatusSortIfNeeded();
+        ApplyDefaultStatusSort();
         ClearStatusButtonEffects();
         e.Handled = true;
     }
@@ -147,7 +147,7 @@ public partial class MainWindow : Window
                 item.StatusId = updated.StatusId;
                 item.LastEditedTime = updated.LastEditedTime;
                 item.StatusColor = ResolveColor(item.StatusId);
-                ApplyDefaultStatusSortIfNeeded();
+                ApplyDefaultStatusSort();
                 ClearStatusButtonEffects();
             };
             return mi;

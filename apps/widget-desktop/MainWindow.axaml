@@ -112,23 +112,6 @@
       <Setter Property="Margin" Value="0,1"/>
     </Style>
 
-    <Style Selector="Button.status">
-      <Setter Property="CornerRadius" Value="999"/>
-      <Setter Property="Padding" Value="10,4"/>
-      <Setter Property="FontSize" Value="12"/>
-      <Setter Property="BorderThickness" Value="0"/>
-      <Setter Property="Focusable" Value="False"/>
-      <Setter Property="Cursor" Value="Hand"/>
-      <Setter Property="Opacity" Value="1"/>
-    </Style>
-
-    <Style Selector="Button.status.hover">
-      <Setter Property="Opacity" Value="0.90"/>
-    </Style>
-
-    <Style Selector="Button.status.pressed">
-      <Setter Property="Opacity" Value="0.78"/>
-    </Style>
   </Window.Styles>
 
   <Border Padding="12"
@@ -153,8 +136,8 @@
 
       <ListBox Name="TodoItems"
                BorderThickness="0"
-               MinHeight="200"
                Background="Transparent"
+               ScrollViewer.VerticalScrollBarVisibility="Auto"
                PointerReleased="List_PointerReleased">
         <ListBox.ItemsPanel>
           <ItemsPanelTemplate>
@@ -179,12 +162,29 @@
                   </StackPanel>
                 </Border>
 
-                <!-- Status button -->
+                <!-- Status badge -->
+                <Border DockPanel.Dock="Left"
+                        Background="{Binding StatusColor,
+                          Converter={StaticResource NotionColorToBrushConverter}}"
+                        CornerRadius="5"
+                        Padding="6,11"
+                        Margin="0,0,8,0"
+                        MinWidth="72"
+                        VerticalAlignment="Center">
+                  <TextBlock Text="{Binding Status}"
+                             FontSize="15"
+                             FontWeight="Bold"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center"
+                             Foreground="{x:Static theme:WidgetTheme.TextPrimaryBrush}"/>
+                </Border>
+
+                <!-- Status checkbox button -->
                 <Button Classes="status"
                         DockPanel.Dock="Right"
                         Background="{Binding StatusColor,
                           Converter={StaticResource NotionColorToBrushConverter}}"
-                        Content="{Binding Status}"
+                        Content="{Binding StatusSymbol}"
                         Click="StatusButton_Click"
                         PointerEntered="StatusButton_PointerEntered"
                         PointerExited="StatusButton_PointerExited"
@@ -192,8 +192,10 @@
                         PointerReleased="StatusButton_PointerReleased"/>
 
                 <TextBlock Text="{Binding Title}"
-                           TextWrapping="Wrap"
+                           TextTrimming="CharacterEllipsis"
                            Foreground="Black"
+                           FontSize="16"
+                           VerticalAlignment="Center"
                            Margin="0,0,10,0"/>
               </DockPanel>
             </Border>

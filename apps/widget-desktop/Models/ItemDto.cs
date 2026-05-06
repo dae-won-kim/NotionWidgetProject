@@ -20,7 +20,18 @@ public class ItemDto : INotifyPropertyChanged
     public string? Status
     {
         get => _status;
-        set { _status = value; OnPropertyChanged(); }
+        set { _status = value; OnPropertyChanged(); OnPropertyChanged(nameof(StatusSymbol)); }
+    }
+
+    public string StatusSymbol
+    {
+        get
+        {
+            var s = Status?.Trim().ToLowerInvariant() ?? "";
+            if (s.Contains("done"))     return "✓";
+            if (s.Contains("progress")) return "~";
+            return "□";
+        }
     }
 
     private string? _statusId;

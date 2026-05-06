@@ -1,120 +1,173 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var notionToken  = builder.Configuration["Notion:Token"]!;
+var databaseId   = builder.Configuration["Notion:DatabaseId"]!;
+
+// Shared HttpClient — configured once at startup
+var http = new HttpClient { BaseAddress = new Uri("https://api.notion.com/v1/") };
+http.DefaultRequestHeaders.Add("Authorization", $"Bearer {notionToken}");
+http.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
+
+// Status cycle order
+var statusOrder = new[] { "To-do", "In progress", "Done" };
+
+// JSON options that preserve property casing (no camelCase renaming)
+var jsonOpts = new JsonSerializerOptions();
+
+// In-memory cache for status options (loaded on first query, rarely changes)
+var cachedOptions = new List<(string Id, string Name, string Color)>();
+
 var app = builder.Build();
 
-var statusOptions = new List<(string Id, string Name)>
-{
-    ("opt_a", "To-do"),
-    ("opt_b", "In progress"),
-    ("opt_c", "Done"),
-};
-
-var items = new Dictionary<string, DummyItem>
-{
-    ["page1"] = new DummyItem { Id="page1", Title="Complete the Galle project", StatusId="opt_a", IsChecked=false },
-    ["page2"] = new DummyItem { Id="page2", Title="Go to the gym on Tuesday", StatusId="opt_c", IsChecked=true },
-    ["page3"] = new DummyItem { Id="page3", Title="Test 중인 것", StatusId="opt_a", IsChecked=false },
-    ["page4"] = new DummyItem { Id="page4", Title="Test 123 b", StatusId="opt_c", IsChecked=true },
-    ["page5"] = new DummyItem { Id="page5", Title="Party TIME", StatusId="opt_c", IsChecked=false },
-};
-
-app.MapGet("/", () => Results.Ok(new { app = "widget-api", ok = true }));
+app.MapGet("/",       () => Results.Ok(new { app = "widget-api", ok = true }));
 app.MapGet("/health", () => Results.Ok(new { ok = true }));
 
-app.MapPost("/v1/widgets/{widgetId}/items/query", (string widgetId) =>
+// ── Query items ────────────────────────────────────────────────────────────
+app.MapPost("/v1/widgets/{widgetId}/items/query", async (string widgetId) =>
 {
-    var data = new
-    {
-        items = items.Values.Select(x => new
+    // 1. DB schema → status options
+    var dbRes  = await http.GetAsync($"databases/{databaseId}");
+    var dbDoc  = JsonDocument.Parse(await dbRes.Content.ReadAsStringAsync());
+
+    cachedOptions =
+    [
+        .. dbDoc.RootElement
+            .GetProperty("properties")
+            .GetProperty("Status")
+            .GetProperty("status")
+            .GetProperty("options")
+            .EnumerateArray()
+            .Select(o => (
+                Id:    o.GetProperty("id").GetString()!,
+                Name:  o.GetProperty("name").GetString()!,
+                Color: ToWidgetColor(o.GetProperty("color").GetString())
+            ))
+    ];
+
+    // 2. Query pages
+    var qRes  = await http.PostAsync($"databases/{databaseId}/query", null);
+    var qDoc  = JsonDocument.Parse(await qRes.Content.ReadAsStringAsync());
+
+    var items = qDoc.RootElement
+        .GetProperty("results")
+        .EnumerateArray()
+        .Select(page =>
         {
-            id = x.Id,
-            title = x.Title,
-            isChecked = x.IsChecked,
-            statusId = x.StatusId,
-            status = statusOptions.First(o => o.Id == x.StatusId).Name,
-            lastEditedTime = x.LastEditedTime.ToString("o")
-        }),
-        statusOptions = statusOptions.Select(o => new { id = o.Id, name = o.Name })
-    };
+            var props = page.GetProperty("properties");
 
-    return Results.Ok(new { ok = true, data });
+            var titleArr  = props.GetProperty("Name").GetProperty("title").EnumerateArray().ToArray();
+            var title     = titleArr.Length > 0
+                ? titleArr[0].GetProperty("text").GetProperty("content").GetString() ?? ""
+                : "(Untitled)";
+
+            string statusId = "", statusName = "To-do";
+            if (props.TryGetProperty("Status", out var sp) &&
+                sp.TryGetProperty("status", out var so) &&
+                so.ValueKind != JsonValueKind.Null)
+            {
+                statusId   = so.GetProperty("id").GetString()!;
+                statusName = so.GetProperty("name").GetString()!;
+            }
+
+            return new
+            {
+                id             = page.GetProperty("id").GetString()!,
+                title,
+                isChecked      = statusName == "Done",
+                statusId,
+                status         = statusName,
+                lastEditedTime = page.GetProperty("last_edited_time").GetString()!
+            };
+        })
+        .ToList();
+
+    var statusOptionsDto = cachedOptions.Select(o => new { id = o.Id, name = o.Name, color = o.Color });
+    return Results.Ok(new { ok = true, data = new { items, statusOptions = statusOptionsDto } });
 });
 
+// ── Status: cycle to next ──────────────────────────────────────────────────
 app.MapPost("/v1/widgets/{widgetId}/items/{itemId}/status/next",
-    (string widgetId, string itemId) =>
+    async (string widgetId, string itemId) =>
 {
-    if (!items.TryGetValue(itemId, out var item))
-        return Results.NotFound(new { ok = false, error = new { code="NOT_FOUND", message="item not found" } });
+    var pageRes = await http.GetAsync($"pages/{itemId}");
+    if (!pageRes.IsSuccessStatusCode)
+        return Results.NotFound(new { ok = false, error = new { code = "NOT_FOUND", message = "item not found" } });
 
-    var idx = statusOptions.FindIndex(o => o.Id == item.StatusId);
-    if (idx < 0) idx = 0;
-    var next = statusOptions[(idx + 1) % statusOptions.Count];
+    var pageDoc = JsonDocument.Parse(await pageRes.Content.ReadAsStringAsync());
+    var props   = pageDoc.RootElement.GetProperty("properties");
 
-    item.StatusId = next.Id;
-    item.LastEditedTime = DateTimeOffset.Now;
+    string current = "To-do";
+    if (props.TryGetProperty("Status", out var sp) &&
+        sp.TryGetProperty("status", out var so) &&
+        so.ValueKind != JsonValueKind.Null)
+        current = so.GetProperty("name").GetString()!;
 
-    var data = new
-    {
-        id = item.Id,
-        statusId = item.StatusId,
-        status = next.Name,
-        lastEditedTime = item.LastEditedTime.ToString("o")
-    };
+    var idx  = Array.IndexOf(statusOrder, current);
+    var next = statusOrder[idx < 0 ? 0 : (idx + 1) % statusOrder.Length];
 
-    return Results.Ok(new { ok = true, data });
+    return await PatchStatusByName(itemId, next);
 });
 
+// ── Status: set specific ───────────────────────────────────────────────────
 app.MapMethods("/v1/widgets/{widgetId}/items/{itemId}/status", new[] { "PATCH" },
-    ([FromRoute] string widgetId, [FromRoute] string itemId, [FromBody] StatusSetBody body) =>
+    async ([FromRoute] string widgetId, [FromRoute] string itemId, [FromBody] StatusSetBody body) =>
 {
-    if (!items.TryGetValue(itemId, out var item))
-        return Results.NotFound(new { ok = false, error = new { code="NOT_FOUND", message="item not found" } });
+    var (_, optName, _) = cachedOptions.FirstOrDefault(o => o.Id == body.StatusId);
+    if (string.IsNullOrEmpty(optName))
+        return Results.BadRequest(new { ok = false, error = new { code = "BAD_STATUS", message = "invalid statusId" } });
 
-    if (!statusOptions.Any(o => o.Id == body.StatusId))
-        return Results.BadRequest(new { ok = false, error = new { code="BAD_STATUS", message="invalid statusId" } });
-
-    item.StatusId = body.StatusId;
-    item.LastEditedTime = DateTimeOffset.Now;
-
-    var name = statusOptions.First(o => o.Id == item.StatusId).Name;
-
-    var data = new
-    {
-        id = item.Id,
-        statusId = item.StatusId,
-        status = name,
-        lastEditedTime = item.LastEditedTime.ToString("o")
-    };
-
-    return Results.Ok(new { ok = true, data });
+    return await PatchStatusByName(itemId, optName);
 });
 
 app.Run();
 
-// ---- ?´ë? ëŞ¨ë¸ ----
-sealed class DummyItem
+// ── Helpers ────────────────────────────────────────────────────────────────
+async Task<IResult> PatchStatusByName(string pageId, string statusName)
 {
-    public string Id { get; set; } = "";
-    public string Title { get; set; } = "";
-    public bool IsChecked { get; set; }
-    public string StatusId { get; set; } = "opt_a";
-    public DateTimeOffset LastEditedTime { get; set; } = DateTimeOffset.Now;
-}
+    var payload  = JsonSerializer.Serialize(
+                       new { properties = new { Status = new { status = new { name = statusName } } } },
+                       jsonOpts);
+    var content  = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
+    var patchRes = await http.PatchAsync($"pages/{pageId}", content);
+    if (!patchRes.IsSuccessStatusCode)
+        return Results.NotFound(new { ok = false, error = new { code = "NOT_FOUND", message = "page not found" } });
 
-sealed class StatusSetBody
-{
-    public string StatusId { get; set; } = "";
-}
+    var patchDoc = JsonDocument.Parse(await patchRes.Content.ReadAsStringAsync());
+    var props    = patchDoc.RootElement.GetProperty("properties");
 
-static class ListExt
-{
-    public static int FindIndex<T>(this List<T> list, Func<T, bool> pred)
+    string updatedId = "", updatedName = statusName;
+    if (props.TryGetProperty("Status", out var sp) &&
+        sp.TryGetProperty("status", out var so) &&
+        so.ValueKind != JsonValueKind.Null)
     {
-        for (int i = 0; i < list.Count; i++)
-            if (pred(list[i])) return i;
-        return -1;
+        updatedId   = so.GetProperty("id").GetString()!;
+        updatedName = so.GetProperty("name").GetString()!;
     }
+
+    return Results.Ok(new
+    {
+        ok   = true,
+        data = new
+        {
+            id             = pageId,
+            statusId       = updatedId,
+            status         = updatedName,
+            lastEditedTime = patchDoc.RootElement.GetProperty("last_edited_time").GetString()!
+        }
+    });
 }
 
+static string ToWidgetColor(string? notionColor) => notionColor switch
+{
+    "blue"   => "blue",
+    "green"  => "green",
+    "yellow" or "orange" => "yellow",
+    "red"    or "pink"   => "red",
+    _                    => "gray"
+};
 
+sealed class StatusSetBody { public string StatusId { get; set; } = ""; }

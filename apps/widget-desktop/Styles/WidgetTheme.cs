@@ -8,8 +8,9 @@ public static class WidgetTheme
     /* ======================
        Fonts
        ====================== */
-    private const string FontFamilyName = "Malgun Gothic";
-    public static readonly FontFamily FontFamilyPrimary = new FontFamily(FontFamilyName);
+    // Inter: Notion이 웹에서 사용하는 폰트 (Avalonia.Fonts.Inter 패키지로 내장)
+    // Malgun Gothic: 한국어 fallback
+    public static readonly FontFamily FontFamilyPrimary = new FontFamily("Inter,Malgun Gothic");
 
     public const double FontSizeTitle = 18;
     public const double FontSizeBody = 14;

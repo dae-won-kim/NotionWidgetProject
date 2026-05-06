@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build *)",
+      "Bash(tasklist)",
+      "Bash(powershell -Command 'Get-Process | Where-Object { $_.Name -like '\\\\''*Widget*'\\\\'' -or $_.MainWindowTitle -like '\\\\''*Checklist*'\\\\'' } | Select-Object Name, Id, MainWindowTitle')",
+      "Bash(powershell -Command ' *)",
+      "Read(//c/Users/c/Desktop/**)"
+    ]
+  }
+}
