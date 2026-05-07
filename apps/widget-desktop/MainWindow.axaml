@@ -1,41 +1,46 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:models="clr-namespace:WidgetDesktop.Models"
         xmlns:conv="clr-namespace:WidgetDesktop.Converters"
         xmlns:theme="clr-namespace:WidgetDesktop.Styles"
         x:Class="WidgetDesktop.MainWindow"
-        Width="360" Height="560"
-        Topmost="True"
-        Title="Checklist Widget"
+        Width="360" Height="580"
+        MinWidth="280" MinHeight="200"
+        Topmost="False"
+        Opacity="0.88"
+        Title="Daily Checklist"
+        SystemDecorations="None"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent"
         PointerMoved="Window_PointerMoved"
         PointerReleased="Window_PointerReleased">
 
   <Window.Resources>
-    <conv:NotionColorToBrushConverter x:Key="NotionColorToBrushConverter"/>
-    <!-- Override default ListBoxItem hover/selection brushes to be transparent -->
-    <SolidColorBrush x:Key="SystemControlHighlightListLowBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="SystemControlHighlightListMediumBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="SystemControlHighlightListAccentLowBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="ListBoxItemPointerOverBackground" Color="Transparent" />
-    <SolidColorBrush x:Key="ListBoxItemSelectedBackground" Color="Transparent" />
-    <SolidColorBrush x:Key="ListBoxItemSelectedPointerOverBackground" Color="Transparent" />
+    <conv:NotionColorToBrushConverter   x:Key="NotionColorToBrushConverter"/>
+    <conv:NotionColorToFgBrushConverter x:Key="NotionColorToFgBrushConverter"/>
+    <SolidColorBrush x:Key="SystemControlHighlightListLowBrush"       Color="Transparent"/>
+    <SolidColorBrush x:Key="SystemControlHighlightListMediumBrush"    Color="Transparent"/>
+    <SolidColorBrush x:Key="SystemControlHighlightListAccentLowBrush" Color="Transparent"/>
+    <SolidColorBrush x:Key="ListBoxItemPointerOverBackground"         Color="Transparent"/>
+    <SolidColorBrush x:Key="ListBoxItemSelectedBackground"            Color="Transparent"/>
+    <SolidColorBrush x:Key="ListBoxItemSelectedPointerOverBackground" Color="Transparent"/>
   </Window.Resources>
 
   <Window.Styles>
+
+    <!-- ListBoxItem base -->
     <Style Selector="ListBoxItem">
-      <Setter Property="Padding" Value="0"/>
-      <Setter Property="Margin" Value="0"/>
-      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Padding"         Value="0"/>
+      <Setter Property="Margin"          Value="0"/>
+      <Setter Property="Background"      Value="Transparent"/>
       <Setter Property="BorderThickness" Value="0"/>
       <Setter Property="RenderTransform" Value="none"/>
-      <!-- 기본 상태에서는 RenderTransform 트랜지션 없음 (즉시 이동을 위해) -->
       <Setter Property="Transitions">
         <Transitions>
           <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
         </Transitions>
       </Setter>
     </Style>
-
     <Style Selector="ListBoxItem.animating">
       <Setter Property="Transitions">
         <Transitions>
@@ -44,13 +49,11 @@
         </Transitions>
       </Setter>
     </Style>
-
     <Style Selector="ListBoxItem.dragging">
-      <Setter Property="Opacity" Value="0.9"/>
-      <Setter Property="ZIndex" Value="100"/>
-      <Setter Property="RenderTransform" Value="scale(1.05)"/>
+      <Setter Property="Opacity"         Value="0.9"/>
+      <Setter Property="ZIndex"          Value="100"/>
+      <Setter Property="RenderTransform" Value="scale(1.03)"/>
     </Style>
-
     <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="Transparent"/>
     </Style>
@@ -63,146 +66,350 @@
     <Style Selector="ListBoxItem:selected:focus /template/ ContentPresenter">
       <Setter Property="Background" Value="Transparent"/>
     </Style>
-    <Style Selector="ListBoxItem:selected:focus:pointerover /template/ ContentPresenter">
-       <Setter Property="Background" Value="Transparent"/>
-    </Style>
-
     <Style Selector="ListBoxItem:pressed /template/ ContentPresenter">
       <Setter Property="Background" Value="Transparent"/>
     </Style>
 
+    <!-- Row pill -->
     <Style Selector="Border.row">
-      <Setter Property="CornerRadius" Value="999"/>
+      <Setter Property="CornerRadius"    Value="999"/>
       <Setter Property="BorderThickness" Value="1"/>
-      <Setter Property="BorderBrush" Value="#E0E0E0"/>
-      <Setter Property="Background" Value="#F7F7F7"/>
+      <Setter Property="BorderBrush"     Value="{DynamicResource WRowBorder}"/>
+      <Setter Property="Background"      Value="{DynamicResource WRowBg}"/>
       <Setter Property="Transitions">
         <Transitions>
-          <BrushTransition Property="Background" Duration="0:0:0.2"/>
+          <BrushTransition Property="Background" Duration="0:0:0.15"/>
         </Transitions>
       </Setter>
     </Style>
-
     <Style Selector="Border.row:pointerover">
-      <Setter Property="Background" Value="{x:Static theme:WidgetTheme.BgItemHoverBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource WRowHoverBg}"/>
     </Style>
-
     <Style Selector="ListBoxItem:selected Border.row">
-      <Setter Property="Background" Value="{x:Static theme:WidgetTheme.BgItemHoverBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource WRowHoverBg}"/>
     </Style>
-
     <Style Selector="ListBoxItem:pressed Border.row">
-      <Setter Property="Background" Value="{x:Static theme:WidgetTheme.BgItemHoverBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource WRowHoverBg}"/>
     </Style>
 
+    <!-- Drag handle -->
     <Style Selector="Border.drag-handle">
-      <Setter Property="Width" Value="18"/>
-      <Setter Property="Padding" Value="2,0"/>
-      <Setter Property="Margin" Value="0,0,10,0"/>
-      <Setter Property="Background" Value="Transparent"/>
-      <Setter Property="Cursor" Value="SizeAll"/>
-      <Setter Property="VerticalAlignment" Value="Stretch"/>
+      <Setter Property="Width"               Value="18"/>
+      <Setter Property="Padding"             Value="2,0"/>
+      <Setter Property="Margin"              Value="0,0,8,0"/>
+      <Setter Property="Background"          Value="Transparent"/>
+      <Setter Property="Cursor"              Value="SizeAll"/>
+      <Setter Property="VerticalAlignment"   Value="Stretch"/>
       <Setter Property="HorizontalAlignment" Value="Left"/>
     </Style>
-
     <Style Selector="Border.drag-handle Rectangle">
-      <Setter Property="Fill" Value="#9A9A9A"/>
+      <Setter Property="Fill"   Value="{DynamicResource WDragHandle}"/>
       <Setter Property="Height" Value="1.5"/>
-      <Setter Property="Width" Value="12"/>
-      <Setter Property="Margin" Value="0,1"/>
+      <Setter Property="Width"  Value="12"/>
+      <Setter Property="Margin" Value="0,1.5"/>
+    </Style>
+
+    <!-- Title-bar buttons -->
+    <Style Selector="Button.title-btn">
+      <Setter Property="Background"                 Value="Transparent"/>
+      <Setter Property="Foreground"                 Value="{DynamicResource WTitleBtnFg}"/>
+      <Setter Property="BorderThickness"            Value="0"/>
+      <Setter Property="Width"                      Value="26"/>
+      <Setter Property="Height"                     Value="26"/>
+      <Setter Property="CornerRadius"               Value="6"/>
+      <Setter Property="FontSize"                   Value="15"/>
+      <Setter Property="Padding"                    Value="0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment"   Value="Center"/>
+      <Setter Property="Cursor"                     Value="Hand"/>
+      <Setter Property="Focusable"                  Value="False"/>
+    </Style>
+    <Style Selector="Button.title-btn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#28FFFFFF"/>
+    </Style>
+    <Style Selector="Button.title-btn:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="#45FFFFFF"/>
+    </Style>
+    <Style Selector="Button.title-btn.active">
+      <Setter Property="Foreground" Value="{DynamicResource WTitleBtnActiveFg}"/>
+    </Style>
+
+    <!-- Day filter buttons -->
+    <Style Selector="Button.day-filter">
+      <Setter Property="Background"                 Value="{DynamicResource WFilterBg}"/>
+      <Setter Property="Foreground"                 Value="{DynamicResource WFilterFg}"/>
+      <Setter Property="BorderThickness"            Value="0"/>
+      <Setter Property="Height"                     Value="24"/>
+      <Setter Property="Padding"                    Value="9,0"/>
+      <Setter Property="CornerRadius"               Value="999"/>
+      <Setter Property="FontSize"                   Value="12"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment"   Value="Center"/>
+      <Setter Property="Cursor"                     Value="Hand"/>
+      <Setter Property="Focusable"                  Value="False"/>
+    </Style>
+    <Style Selector="Button.day-filter.active">
+      <Setter Property="Background" Value="#885060FF"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style Selector="Button.day-filter:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#35FFFFFF"/>
+    </Style>
+
+    <!-- Status badge button -->
+    <Style Selector="Button.status-badge">
+      <Setter Property="CornerRadius"               Value="5"/>
+      <Setter Property="Padding"                    Value="6,10"/>
+      <Setter Property="FontSize"                   Value="12"/>
+      <Setter Property="FontWeight"                 Value="Bold"/>
+      <Setter Property="BorderThickness"            Value="0"/>
+      <Setter Property="Focusable"                  Value="False"/>
+      <Setter Property="Cursor"                     Value="Hand"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment"   Value="Center"/>
+    </Style>
+    <Style Selector="Button.status-badge:pointerover /template/ ContentPresenter">
+      <Setter Property="Opacity" Value="0.80"/>
+    </Style>
+
+    <!-- Status flyout presenter -->
+    <Style Selector="FlyoutPresenter">
+      <Setter Property="Background"      Value="{DynamicResource WFlyoutBg}"/>
+      <Setter Property="BorderBrush"     Value="{DynamicResource WFlyoutBorder}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius"    Value="10"/>
+      <Setter Property="Padding"         Value="6"/>
+    </Style>
+
+    <!-- Theme mode buttons (☀ / 🌙) -->
+    <Style Selector="Button.theme-mode">
+      <Setter Property="Background"                 Value="Transparent"/>
+      <Setter Property="BorderThickness"            Value="0"/>
+      <Setter Property="Width"                      Value="32"/>
+      <Setter Property="Height"                     Value="32"/>
+      <Setter Property="CornerRadius"               Value="7"/>
+      <Setter Property="FontSize"                   Value="18"/>
+      <Setter Property="Padding"                    Value="0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment"   Value="Center"/>
+      <Setter Property="Cursor"                     Value="Hand"/>
+      <Setter Property="Focusable"                  Value="False"/>
+      <Setter Property="Opacity"                    Value="0.28"/>
+    </Style>
+    <Style Selector="Button.theme-mode.active">
+      <Setter Property="Opacity" Value="1.0"/>
+    </Style>
+    <Style Selector="Button.theme-mode:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#28FFFFFF"/>
     </Style>
 
   </Window.Styles>
 
-  <Border Padding="12"
-          CornerRadius="16"
-          PointerPressed="WindowDragArea_PointerPressed">
+  <!-- Root grid: 6 px resize zones -->
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="6"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="6"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="6"/>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="6"/>
+    </Grid.ColumnDefinitions>
 
-    <DockPanel>
+    <!-- Resize handles -->
+    <Border Grid.Row="0" Grid.Column="0" Cursor="TopLeftCorner"     Background="Transparent" PointerPressed="ResizeBorder_PointerPressed" Tag="NorthWest"/>
+    <Border Grid.Row="0" Grid.Column="1" Cursor="SizeNorthSouth"    Background="Transparent" PointerPressed="ResizeBorder_PointerPressed" Tag="North"/>
+    <Border Grid.Row="0" Grid.Column="2" Cursor="TopRightCorner"    Background="Transparent" PointerPressed="ResizeBorder_PointerPressed" Tag="NorthEast"/>
+    <Border Grid.Row="1" Grid.Column="0" Cursor="SizeWestEast"      Background="Transparent" PointerPressed="ResizeBorder_PointerPressed" Tag="West"/>
+    <Border Grid.Row="1" Grid.Column="2" Cursor="SizeWestEast"      Background="Transparent" PointerPressed="ResizeBorder_PointerPressed" Tag="East"/>
+    <Border Grid.Row="2" Grid.Column="0" Cursor="BottomLeftCorner"  Background="Transparent" PointerPressed="ResizeBorder_PointerPressed" Tag="SouthWest"/>
+    <Border Grid.Row="2" Grid.Column="1" Cursor="SizeNorthSouth"    Background="Transparent" PointerPressed="ResizeBorder_PointerPressed" Tag="South"/>
+    <Border Grid.Row="2" Grid.Column="2" Cursor="BottomRightCorner" Background="Transparent" PointerPressed="ResizeBorder_PointerPressed" Tag="SouthEast"/>
 
-      <TextBlock DockPanel.Dock="Top"
-                 Text="Checklist"
-                 FontSize="18"
-                 FontWeight="Bold"
-                 Margin="0,0,0,12"/>
+    <!-- ── Main content ─────────────────────────────────────────── -->
+    <Border Grid.Row="1" Grid.Column="1"
+            CornerRadius="14"
+            ClipToBounds="True"
+            Background="{DynamicResource WPanelBg}">
 
-      <!-- Error display -->
-      <TextBlock Name="ErrorText"
-                 DockPanel.Dock="Top"
-                 IsVisible="False"
-                 TextWrapping="Wrap"
-                 Foreground="Red"
-                 Margin="0,0,0,12"/>
+      <DockPanel Margin="14,10,14,14" Background="Transparent">
 
-      <ListBox Name="TodoItems"
-               BorderThickness="0"
-               Background="Transparent"
-               ScrollViewer.VerticalScrollBarVisibility="Auto"
-               PointerReleased="List_PointerReleased">
-        <ListBox.ItemsPanel>
-          <ItemsPanelTemplate>
-            <!-- 가상화를 끄고 일반 StackPanel을 사용하여 애니메이션 끊김 방지 -->
-            <StackPanel />
-          </ItemsPanelTemplate>
-        </ListBox.ItemsPanel>
-        <ListBox.ItemTemplate>
-          <DataTemplate x:DataType="models:ItemDto">
-            <Border Classes="row"
-                    Padding="12"
-                    Margin="0,0,0,8">
-              <DockPanel>
-                <!-- Drag handle -->
-                <Border Classes="drag-handle"
-                        DockPanel.Dock="Left"
-                        PointerPressed="DragHandle_PointerPressed">
-                  <StackPanel VerticalAlignment="Center">
-                    <Rectangle/>
-                    <Rectangle/>
-                    <Rectangle/>
+        <!-- ── Title bar ──────────────────────────────────────── -->
+        <Grid DockPanel.Dock="Top"
+              Background="Transparent"
+              Margin="0,2,0,8"
+              PointerPressed="TitleBar_PointerPressed">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+
+          <StackPanel VerticalAlignment="Center">
+            <TextBlock Text="Daily Checklist"
+                       FontSize="17"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource WTitleFg}"/>
+            <TextBlock Name="DateLabel"
+                       FontSize="11"
+                       Foreground="{DynamicResource WDateFg}"/>
+          </StackPanel>
+
+          <StackPanel Grid.Column="1"
+                      Orientation="Horizontal"
+                      Spacing="2"
+                      VerticalAlignment="Center">
+            <Button Name="RefreshBtn"  Classes="title-btn" Content="⟳"  Click="Refresh_Click"    ToolTip.Tip="새로고침"/>
+            <Button Name="PinBtn"      Classes="title-btn" Content="📌" Click="Pin_Click"         ToolTip.Tip="최상단 고정 토글"/>
+            <Button Name="MinimizeBtn" Classes="title-btn" Content="−"  Click="Minimize_Click"   ToolTip.Tip="최소화"/>
+            <Button Name="HideBtn"     Classes="title-btn" Content="×"  Click="HideToTray_Click" ToolTip.Tip="트레이로 숨기기"/>
+          </StackPanel>
+        </Grid>
+
+        <!-- ── Day filter row + theme toggle ─────────────────── -->
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+
+          <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                        VerticalScrollBarVisibility="Disabled">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+              <Button Name="FilterAll" Classes="day-filter" Content="전체" Click="DayFilter_Click" Tag=""/>
+              <Button Name="FilterMon" Classes="day-filter" Content="월"   Click="DayFilter_Click" Tag="월요일"/>
+              <Button Name="FilterTue" Classes="day-filter" Content="화"   Click="DayFilter_Click" Tag="화요일"/>
+              <Button Name="FilterWed" Classes="day-filter" Content="수"   Click="DayFilter_Click" Tag="수요일"/>
+              <Button Name="FilterThu" Classes="day-filter" Content="목"   Click="DayFilter_Click" Tag="목요일"/>
+              <Button Name="FilterFri" Classes="day-filter" Content="금"   Click="DayFilter_Click" Tag="금요일"/>
+              <Button Name="FilterSat" Classes="day-filter" Content="토"   Click="DayFilter_Click" Tag="토요일"/>
+              <Button Name="FilterSun" Classes="day-filter" Content="일"   Click="DayFilter_Click" Tag="일요일"/>
+            </StackPanel>
+          </ScrollViewer>
+
+          <!-- Theme toggle: click each button or swipe left/right -->
+          <Border Name="ThemeSwipeZone"
+                  Grid.Column="1"
+                  Background="Transparent"
+                  Margin="4,0,0,0"
+                  PointerPressed="ThemeSwipe_PointerPressed"
+                  PointerReleased="ThemeSwipe_PointerReleased">
+            <StackPanel Orientation="Horizontal" Spacing="1">
+              <Button Name="ThemeLightBtn" Classes="theme-mode" Content="☀"
+                      Click="ThemeLightBtn_Click" ToolTip.Tip="라이트 모드"/>
+              <Button Name="ThemeDarkBtn"  Classes="theme-mode" Content="🌙"
+                      Click="ThemeDarkBtn_Click"  ToolTip.Tip="다크 모드"/>
+            </StackPanel>
+          </Border>
+        </Grid>
+
+        <!-- Error display -->
+        <TextBlock Name="ErrorText"
+                   DockPanel.Dock="Top"
+                   IsVisible="False"
+                   TextWrapping="Wrap"
+                   Foreground="#FF7070"
+                   FontSize="12"
+                   Margin="0,0,0,8"/>
+
+        <!-- ── Checklist ──────────────────────────────────────── -->
+        <ListBox Name="TodoItems"
+                 BorderThickness="0"
+                 Background="Transparent"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 PointerReleased="List_PointerReleased">
+          <ListBox.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel/>
+            </ItemsPanelTemplate>
+          </ListBox.ItemsPanel>
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="models:ItemDto">
+              <Border Classes="row" Padding="10,8" Margin="0,0,0,6">
+                <DockPanel>
+
+                  <!-- Drag handle -->
+                  <Border Classes="drag-handle"
+                          DockPanel.Dock="Left"
+                          PointerPressed="DragHandle_PointerPressed">
+                    <StackPanel VerticalAlignment="Center">
+                      <Rectangle/>
+                      <Rectangle/>
+                      <Rectangle/>
+                    </StackPanel>
+                  </Border>
+
+                  <!-- Status badge (클릭 → 상태 선택 팝업) -->
+                  <Button Classes="status-badge"
+                          DockPanel.Dock="Left"
+                          Background="{Binding StatusColor, Converter={StaticResource NotionColorToBrushConverter}}"
+                          Foreground="{Binding StatusColor, Converter={StaticResource NotionColorToFgBrushConverter}}"
+                          Content="{Binding Status}"
+                          Click="StatusBadge_Click"
+                          Margin="0,0,8,0"
+                          MinWidth="66"
+                          VerticalAlignment="Center"/>
+
+                  <!-- Status toggle button (클릭 → 다음 상태 순환) -->
+                  <Button Classes="status"
+                          DockPanel.Dock="Right"
+                          Background="{Binding StatusColor, Converter={StaticResource NotionColorToBrushConverter}}"
+                          Content="{Binding StatusSymbol}"
+                          Click="StatusButton_Click"
+                          PointerEntered="StatusButton_PointerEntered"
+                          PointerExited="StatusButton_PointerExited"
+                          PointerPressed="StatusButton_PointerPressed"
+                          PointerReleased="StatusButton_PointerReleased"/>
+
+                  <!-- Title + Days + Note -->
+                  <StackPanel VerticalAlignment="Center" Margin="0,0,6,0">
+                    <SelectableTextBlock Text="{Binding Title}"
+                                         TextTrimming="CharacterEllipsis"
+                                         Foreground="{DynamicResource WItemTitleFg}"
+                                         FontSize="14"
+                                         FontWeight="Medium"
+                                         VerticalAlignment="Center"/>
+
+                    <!-- Day tags -->
+                    <ItemsControl ItemsSource="{Binding Days}"
+                                  IsVisible="{Binding HasDays}"
+                                  Margin="0,3,0,0">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <WrapPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                          <Border Background="{DynamicResource WDayTagBg}"
+                                  CornerRadius="4" Padding="5,1" Margin="0,0,3,0">
+                            <TextBlock Text="{Binding}"
+                                       FontSize="10"
+                                       Foreground="{DynamicResource WDayTagFg}"/>
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Note -->
+                    <TextBlock Text="{Binding Note}"
+                               IsVisible="{Binding HasNote}"
+                               FontSize="11"
+                               Foreground="{DynamicResource WNoteFg}"
+                               TextTrimming="CharacterEllipsis"
+                               Margin="0,2,0,0"/>
                   </StackPanel>
-                </Border>
 
-                <!-- Status badge -->
-                <Border DockPanel.Dock="Left"
-                        Background="{Binding StatusColor,
-                          Converter={StaticResource NotionColorToBrushConverter}}"
-                        CornerRadius="5"
-                        Padding="6,11"
-                        Margin="0,0,8,0"
-                        MinWidth="72"
-                        VerticalAlignment="Center">
-                  <TextBlock Text="{Binding Status}"
-                             FontSize="15"
-                             FontWeight="Bold"
-                             HorizontalAlignment="Center"
-                             VerticalAlignment="Center"
-                             Foreground="{x:Static theme:WidgetTheme.TextPrimaryBrush}"/>
-                </Border>
+                </DockPanel>
+              </Border>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
 
-                <!-- Status checkbox button -->
-                <Button Classes="status"
-                        DockPanel.Dock="Right"
-                        Background="{Binding StatusColor,
-                          Converter={StaticResource NotionColorToBrushConverter}}"
-                        Content="{Binding StatusSymbol}"
-                        Click="StatusButton_Click"
-                        PointerEntered="StatusButton_PointerEntered"
-                        PointerExited="StatusButton_PointerExited"
-                        PointerPressed="StatusButton_PointerPressed"
-                        PointerReleased="StatusButton_PointerReleased"/>
+      </DockPanel>
+    </Border>
+  </Grid>
 
-                <TextBlock Text="{Binding Title}"
-                           TextTrimming="CharacterEllipsis"
-                           Foreground="Black"
-                           FontSize="16"
-                           VerticalAlignment="Center"
-                           Margin="0,0,10,0"/>
-              </DockPanel>
-            </Border>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
-
-    </DockPanel>
-  </Border>
 </Window>

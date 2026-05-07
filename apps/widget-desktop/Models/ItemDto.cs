@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -23,16 +24,35 @@ public class ItemDto : INotifyPropertyChanged
         set { _status = value; OnPropertyChanged(); OnPropertyChanged(nameof(StatusSymbol)); }
     }
 
-    public string StatusSymbol
+    public string StatusSymbol => Status?.Trim() switch
     {
-        get
-        {
-            var s = Status?.Trim().ToLowerInvariant() ?? "";
-            if (s.Contains("done"))     return "✓";
-            if (s.Contains("progress")) return "~";
-            return "□";
-        }
+        "완료"   => "✓",
+        "진행 중" => "~",
+        _        => "□"
+    };
+
+    private List<string> _days = new();
+    public List<string> Days
+    {
+        get => _days;
+        set { _days = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasDays)); }
     }
+    public bool HasDays => Days.Count > 0;
+
+    private bool _showDays = true;
+    public bool ShowDays
+    {
+        get => _showDays;
+        set { _showDays = value; OnPropertyChanged(); }
+    }
+
+    private string? _note;
+    public string? Note
+    {
+        get => _note;
+        set { _note = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasNote)); }
+    }
+    public bool HasNote => !string.IsNullOrWhiteSpace(Note);
 
     private string? _statusId;
     public string? StatusId

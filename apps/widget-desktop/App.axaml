@@ -1,13 +1,63 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:fluent="clr-namespace:Avalonia.Themes.Fluent;assembly=Avalonia.Themes.Fluent"
-             RequestedThemeVariant="Light"
+             RequestedThemeVariant="Dark"
              x:Class="WidgetDesktop.App">
 
-             
-<Application.Styles>
-  <fluent:FluentTheme/>
-  <StyleInclude Source="/Styles/WidgetStyles.axaml"/>
-</Application.Styles>
+  <!-- ── Theme color resources ─────────────────────────────────────── -->
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="WPanelBg"         Color="#1A1A2E"/>
+          <SolidColorBrush x:Key="WTitleFg"          Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="WDateFg"           Color="#9BAACF"/>
+          <SolidColorBrush x:Key="WRowBg"            Color="#18FFFFFF"/>
+          <SolidColorBrush x:Key="WRowBorder"        Color="#30FFFFFF"/>
+          <SolidColorBrush x:Key="WRowHoverBg"       Color="#30FFFFFF"/>
+          <SolidColorBrush x:Key="WDragHandle"       Color="#55FFFFFF"/>
+          <SolidColorBrush x:Key="WFilterBg"         Color="#20FFFFFF"/>
+          <SolidColorBrush x:Key="WFilterFg"         Color="#80A0C8"/>
+          <SolidColorBrush x:Key="WTitleBtnFg"       Color="#80A0C8"/>
+          <SolidColorBrush x:Key="WTitleBtnActiveFg" Color="#D0C8FF"/>
+          <SolidColorBrush x:Key="WItemTitleFg"      Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="WNoteFg"           Color="#7070A0"/>
+          <SolidColorBrush x:Key="WDayTagBg"         Color="#38FFFFFF"/>
+          <SolidColorBrush x:Key="WDayTagFg"         Color="#C0B8FF"/>
+          <SolidColorBrush x:Key="WFlyoutBg"         Color="#22203A"/>
+          <SolidColorBrush x:Key="WFlyoutBorder"     Color="#40FFFFFF"/>
+          <x:String       x:Key="WThemeIcon">☀</x:String>
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="WPanelBg"         Color="#F2F2F8"/>
+          <SolidColorBrush x:Key="WTitleFg"          Color="#1A1A2E"/>
+          <SolidColorBrush x:Key="WDateFg"           Color="#4A5A84"/>
+          <SolidColorBrush x:Key="WRowBg"            Color="#14000020"/>
+          <SolidColorBrush x:Key="WRowBorder"        Color="#22000040"/>
+          <SolidColorBrush x:Key="WRowHoverBg"       Color="#28000030"/>
+          <SolidColorBrush x:Key="WDragHandle"       Color="#44000040"/>
+          <SolidColorBrush x:Key="WFilterBg"         Color="#18000020"/>
+          <SolidColorBrush x:Key="WFilterFg"         Color="#5060A0"/>
+          <SolidColorBrush x:Key="WTitleBtnFg"       Color="#7080A0"/>
+          <SolidColorBrush x:Key="WTitleBtnActiveFg" Color="#5060A0"/>
+          <SolidColorBrush x:Key="WItemTitleFg"      Color="#1A1A2E"/>
+          <SolidColorBrush x:Key="WNoteFg"           Color="#6070A0"/>
+          <SolidColorBrush x:Key="WDayTagBg"         Color="#18000020"/>
+          <SolidColorBrush x:Key="WDayTagFg"         Color="#5060A0"/>
+          <SolidColorBrush x:Key="WFlyoutBg"         Color="#EEEEF6"/>
+          <SolidColorBrush x:Key="WFlyoutBorder"     Color="#30000040"/>
+          <x:String       x:Key="WThemeIcon">🌙</x:String>
+        </ResourceDictionary>
+
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+
+  <Application.Styles>
+    <fluent:FluentTheme/>
+    <StyleInclude Source="/Styles/WidgetStyles.axaml"/>
+  </Application.Styles>
 
 </Application>
