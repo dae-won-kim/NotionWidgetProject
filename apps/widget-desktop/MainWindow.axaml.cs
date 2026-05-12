@@ -71,7 +71,7 @@ public partial class MainWindow : Window
         LoadWindowState();
 
         TodoItems.ItemsSource = _items;
-        _items.Add(new ItemDto { Id = "loading", Title = "(불러오는 중...)", Status = "" });
+        _items.Add(CreatePlaceholder("(불러오는 중...)"));
         ErrorText.IsVisible = false;
 
         _selectedDay = GetTodayFilter();
@@ -142,7 +142,7 @@ public partial class MainWindow : Window
             ErrorText.Text      = $"로드 실패: {ex.Message}";
             _allItems.Clear();
             _items.Clear();
-            _items.Add(new ItemDto { Id = "err", Title = "(항목 없음)", Status = "" });
+            _items.Add(CreatePlaceholder("(항목 없음)"));
         }
     }
 
@@ -226,7 +226,14 @@ public partial class MainWindow : Window
             : _allItems.Where(it => it.Days.Contains(_selectedDay)).ToList();
 
         _items.Clear();
-        foreach (var it in source) _items.Add(it);
+        var visibleItems = source.ToList();
+        if (visibleItems.Count == 0)
+        {
+            _items.Add(CreatePlaceholder("(항목 없음)"));
+            return;
+        }
+
+        foreach (var it in visibleItems) _items.Add(it);
     }
 
     private void UpdateFilterButtons()
@@ -259,6 +266,7 @@ public partial class MainWindow : Window
     private async void StatusButton_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is not Button b || b.DataContext is not ItemDto item) return;
+        if (item.IsPlaceholder) return;
         ApplyStatusUpdate(item, await _api.StatusNextAsync(WidgetId, item.Id));
         e.Handled = true;
     }
@@ -267,6 +275,7 @@ public partial class MainWindow : Window
     private void StatusBadge_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is not Button b || b.DataContext is not ItemDto item) return;
+        if (item.IsPlaceholder) return;
         ShowStatusFlyout(b, item);
         e.Handled = true;
     }
@@ -360,6 +369,7 @@ public partial class MainWindow : Window
         if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
         if (sender is Control c && c.DataContext is ItemDto item)
         {
+            if (item.IsPlaceholder) return;
             _draggingItem = item;
             if (FindItemContainer(c).Container is ListBoxItem lbi)
                 lbi.Classes.Add("dragging");
@@ -591,6 +601,15 @@ public partial class MainWindow : Window
         if (on) btn.Classes.Add(cls);
         else    btn.Classes.Remove(cls);
     }
+
+    private static ItemDto CreatePlaceholder(string title) => new()
+    {
+        Id = "__placeholder",
+        Title = title,
+        Status = "",
+        StatusColor = "gray",
+        IsPlaceholder = true
+    };
 
     private static WindowEdge? ParseWindowEdge(string? tag) => tag switch
     {

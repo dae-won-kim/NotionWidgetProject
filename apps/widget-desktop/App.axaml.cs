@@ -25,11 +25,19 @@ public partial class App : Application
         {
             desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-            _mainWindow      = new MainWindow { Icon = AppIcon };
-            desktop.MainWindow = _mainWindow;
-            _mainWindow.Show();
+            var loginWindow = new LoginWindow { Icon = AppIcon };
 
-            SetupTrayIcon();
+            loginWindow.AuthCompleted += () =>
+            {
+                _mainWindow          = new MainWindow { Icon = AppIcon };
+                desktop.MainWindow   = _mainWindow;
+                _mainWindow.Show();
+                loginWindow.Close();
+                SetupTrayIcon();
+            };
+
+            desktop.MainWindow = loginWindow;
+            loginWindow.Show();
         }
         base.OnFrameworkInitializationCompleted();
     }
@@ -55,6 +63,38 @@ public partial class App : Application
             autoStart.Header = autoOn ? "☑ 시작 시 자동 실행" : "☐ 시작 시 자동 실행";
         };
 
+        var logoutItem = new NativeMenuItem("Notion 로그아웃");
+        logoutItem.Click += async (_, _) =>
+        {
+            // Perform logout then restart login flow
+            var client = new Services.WidgetApiClient(
+                Environment.GetEnvironmentVariable("WIDGET_API_BASE_URL") ?? "http://localhost:5183");
+            await client.LogoutAsync();
+
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                _mainWindow?.AllowClose();
+                _mainWindow?.Close();
+                _mainWindow   = null;
+                _trayIcon?.Dispose();
+                _trayIcon     = null;
+
+                var loginWindow = new LoginWindow { Icon = AppIcon };
+                loginWindow.AuthCompleted += () =>
+                {
+                    _mainWindow        = new MainWindow { Icon = AppIcon };
+                    (ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!
+                        .MainWindow    = _mainWindow;
+                    _mainWindow.Show();
+                    loginWindow.Close();
+                    SetupTrayIcon();
+                };
+                (ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!
+                    .MainWindow = loginWindow;
+                loginWindow.Show();
+            });
+        };
+
         var exitItem = new NativeMenuItem("종료");
         exitItem.Click += (_, _) => ExitApp();
 
@@ -62,6 +102,8 @@ public partial class App : Application
         menu.Add(showItem);
         menu.Add(new NativeMenuItemSeparator());
         menu.Add(autoStart);
+        menu.Add(new NativeMenuItemSeparator());
+        menu.Add(logoutItem);
         menu.Add(new NativeMenuItemSeparator());
         menu.Add(exitItem);
 

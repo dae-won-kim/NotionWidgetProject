@@ -8,6 +8,8 @@ public class ItemDto : INotifyPropertyChanged
 {
     public string Id { get; set; } = "";
     public string Title { get; set; } = "";
+    public bool IsPlaceholder { get; set; }
+    public bool IsRegular => !IsPlaceholder;
 
     private bool _isChecked;
     // ✅ 체크리스트 체크 여부 (API: isChecked)

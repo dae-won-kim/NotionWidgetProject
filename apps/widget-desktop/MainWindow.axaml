@@ -333,6 +333,7 @@
                   <!-- Drag handle -->
                   <Border Classes="drag-handle"
                           DockPanel.Dock="Left"
+                          IsVisible="{Binding IsRegular}"
                           PointerPressed="DragHandle_PointerPressed">
                     <StackPanel VerticalAlignment="Center">
                       <Rectangle/>
@@ -344,6 +345,7 @@
                   <!-- Status badge (클릭 → 상태 선택 팝업) -->
                   <Button Classes="status-badge"
                           DockPanel.Dock="Left"
+                          IsVisible="{Binding IsRegular}"
                           Background="{Binding StatusColor, Converter={StaticResource NotionColorToBrushConverter}}"
                           Foreground="{Binding StatusColor, Converter={StaticResource NotionColorToFgBrushConverter}}"
                           Content="{Binding Status}"
@@ -355,6 +357,7 @@
                   <!-- Status toggle button (클릭 → 다음 상태 순환) -->
                   <Button Classes="status"
                           DockPanel.Dock="Right"
+                          IsVisible="{Binding IsRegular}"
                           Background="{Binding StatusColor, Converter={StaticResource NotionColorToBrushConverter}}"
                           Content="{Binding StatusSymbol}"
                           Click="StatusButton_Click"

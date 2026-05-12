@@ -1,0 +1,151 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="WidgetDesktop.LoginWindow"
+        Width="400" Height="620"
+        MinWidth="360" MinHeight="560"
+        Title="Notion 연동 설정"
+        SystemDecorations="None"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent"
+        WindowStartupLocation="CenterScreen">
+
+  <Window.Styles>
+    <Style Selector="Button.primary">
+      <Setter Property="Background"                 Value="#2D2D2D"/>
+      <Setter Property="Foreground"                 Value="White"/>
+      <Setter Property="BorderThickness"            Value="0"/>
+      <Setter Property="CornerRadius"               Value="8"/>
+      <Setter Property="Padding"                    Value="0,14"/>
+      <Setter Property="FontSize"                   Value="14"/>
+      <Setter Property="FontWeight"                 Value="SemiBold"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="Cursor"                     Value="Hand"/>
+      <Setter Property="Transitions">
+        <Transitions><BrushTransition Property="Background" Duration="0:0:0.12"/></Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Button.primary:pointerover">
+      <Setter Property="Background" Value="#444"/>
+    </Style>
+    <Style Selector="Button.primary:pressed">
+      <Setter Property="Background" Value="#111"/>
+    </Style>
+    <Style Selector="Button.primary:disabled">
+      <Setter Property="Background" Value="#CCC"/>
+    </Style>
+
+    <Style Selector="Button.secondary">
+      <Setter Property="Background"                 Value="Transparent"/>
+      <Setter Property="Foreground"                 Value="#555"/>
+      <Setter Property="BorderBrush"                Value="#DDD"/>
+      <Setter Property="BorderThickness"            Value="1"/>
+      <Setter Property="CornerRadius"               Value="8"/>
+      <Setter Property="Padding"                    Value="0,12"/>
+      <Setter Property="FontSize"                   Value="13"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="Cursor"                     Value="Hand"/>
+    </Style>
+    <Style Selector="Button.secondary:pointerover">
+      <Setter Property="Background" Value="#F5F5F5"/>
+    </Style>
+
+    <Style Selector="Button.close">
+      <Setter Property="Background"                 Value="Transparent"/>
+      <Setter Property="Foreground"                 Value="#999"/>
+      <Setter Property="BorderThickness"            Value="0"/>
+      <Setter Property="Width"                      Value="28"/>
+      <Setter Property="Height"                     Value="28"/>
+      <Setter Property="CornerRadius"               Value="14"/>
+      <Setter Property="FontSize"                   Value="13"/>
+      <Setter Property="Padding"                    Value="0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment"   Value="Center"/>
+      <Setter Property="Cursor"                     Value="Hand"/>
+    </Style>
+    <Style Selector="Button.close:pointerover">
+      <Setter Property="Background" Value="#EEE"/>
+      <Setter Property="Foreground" Value="#333"/>
+    </Style>
+
+    <Style Selector="TextBox.input">
+      <Setter Property="Background"       Value="#F8F8F8"/>
+      <Setter Property="BorderBrush"      Value="#E0E0E0"/>
+      <Setter Property="BorderThickness"  Value="1"/>
+      <Setter Property="CornerRadius"     Value="8"/>
+      <Setter Property="Padding"          Value="12,10"/>
+      <Setter Property="FontSize"         Value="13"/>
+      <Setter Property="FontFamily"       Value="Consolas,monospace"/>
+    </Style>
+    <Style Selector="TextBox.input:focus">
+      <Setter Property="BorderBrush" Value="#2D2D2D"/>
+    </Style>
+  </Window.Styles>
+
+  <Border Margin="12" CornerRadius="16"
+          BoxShadow="0 8 32 0 #33000000, 0 2 8 0 #22000000">
+    <Border Background="#FAFAFA" CornerRadius="16"
+            PointerPressed="TitleBar_PointerPressed">
+      <Grid RowDefinitions="Auto,*">
+
+        <!-- Title bar -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="20,16,16,0">
+          <TextBlock Grid.Column="0" Text="Notion Widget"
+                     FontSize="13" FontWeight="SemiBold" Foreground="#999"
+                     VerticalAlignment="Center"/>
+          <Button Grid.Column="1" Classes="close" Content="✕" Click="Close_Click"/>
+        </Grid>
+
+        <StackPanel Grid.Row="1" Margin="32,0,32,32" Spacing="0" VerticalAlignment="Center">
+
+          <!-- Icon -->
+          <Border Width="64" Height="64" CornerRadius="16" Background="#1A1A1A"
+                  HorizontalAlignment="Center" Margin="0,0,0,20">
+            <TextBlock Text="N" FontSize="34" FontWeight="Bold" Foreground="White"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+          </Border>
+
+          <!-- Title -->
+          <TextBlock Text="Notion 연동 설정"
+                     FontSize="22" FontWeight="Bold" Foreground="#1A1A1A"
+                     HorizontalAlignment="Center" Margin="0,0,0,6"/>
+          <TextBlock Text="Notion에 로그인하면 위젯용 데이터베이스를 자동으로 생성합니다."
+                     FontSize="13" Foreground="#888" TextAlignment="Center"
+                     HorizontalAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,28"/>
+
+          <Border Background="#F4F4F4" BorderBrush="#E0E0E0"
+                  BorderThickness="1" CornerRadius="8" Padding="14,12"
+                  Margin="0,0,0,24">
+            <StackPanel Spacing="6">
+              <TextBlock Text="승인 화면에서 위젯 DB를 만들 부모 페이지를 선택해주세요."
+                         FontSize="12" FontWeight="SemiBold" Foreground="#333"
+                         TextWrapping="Wrap"/>
+              <TextBlock Text="앱이 Task, Status, Day, Note 속성을 가진 데이터베이스를 생성하고 자동으로 연결합니다."
+                         FontSize="12" Foreground="#777" TextWrapping="Wrap"/>
+            </StackPanel>
+          </Border>
+
+          <!-- Connect button -->
+          <Button x:Name="ConnectButton" Classes="primary"
+                  HorizontalAlignment="Stretch"
+                  Click="Connect_Click" Margin="0,0,0,12">
+            Notion으로 로그인
+          </Button>
+
+          <!-- Status / Error -->
+          <TextBlock x:Name="StatusText" Text=""
+                     FontSize="12" Foreground="#888"
+                     TextAlignment="Center" TextWrapping="Wrap"
+                     HorizontalAlignment="Center" IsVisible="False"/>
+
+          <Border x:Name="ErrorBox" Background="#FFF8F0" BorderBrush="#FFD9A0"
+                  BorderThickness="1" CornerRadius="8" Padding="12,10"
+                  Margin="0,4,0,0" IsVisible="False">
+            <TextBlock x:Name="ErrorText" FontSize="12" Foreground="#B25000"
+                       TextAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Center"/>
+          </Border>
+
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Border>
+</Window>
