@@ -29,3 +29,4 @@ Thumbs.db
 # =========================
 # 자격증명을 채운 후에는 절대 커밋하지 마세요
 services/widget-api/NotionCredentials.cs
+.buildcheck/widget-api/appsettings.Development.json
