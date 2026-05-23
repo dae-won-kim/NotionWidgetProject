@@ -14,7 +14,10 @@
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\2000d\\\\Desktop\\\\NotionWidgetProject\" -Recurse -Force)",
       "Bash(Select-Object FullName, PSIsContainer)",
       "PowerShell(head -150)",
-      "Bash(xargs cat)"
+      "Bash(xargs cat)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\c\\\\Desktop\\\\NotionWidgetProject\" -Recurse -Force | Where-Object { -not $_.PSIsContainer } | Select-Object FullName | Format-List)"
     ]
   }
 }
