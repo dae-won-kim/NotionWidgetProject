@@ -1,7 +1,8 @@
-System.Net.Http.HttpRequestException: Response status code does not indicate success: 404 (Not Found).
+System.Net.Http.HttpRequestException: Response status code does not indicate success: 400 (Bad Request).
    at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
-   at WidgetDesktop.Services.WidgetApiClient.StatusNextAsync(String widgetId, String itemId) in C:\Users\c\Desktop\NotionWidgetProject\apps\widget-desktop\Services\WidgetApiClient.cs:line 45
-   at WidgetDesktop.MainWindow.StatusButton_Click(Object sender, RoutedEventArgs e) in C:\Users\c\Desktop\NotionWidgetProject\apps\widget-desktop\MainWindow.axaml.cs:line 122
+   at WidgetDesktop.Services.WidgetApiClient.Unwrap[T](HttpResponseMessage res) in C:\Users\2000d\Desktop\NotionWidgetProject\apps\widget-desktop\Services\WidgetApiClient.cs:line 44
+   at WidgetDesktop.Services.WidgetApiClient.PostAndUnwrap[T](String url) in C:\Users\2000d\Desktop\NotionWidgetProject\apps\widget-desktop\Services\WidgetApiClient.cs:line 37
+   at WidgetDesktop.MainWindow.StatusButton_Click(Object sender, RoutedEventArgs e) in C:\Users\2000d\Desktop\NotionWidgetProject\apps\widget-desktop\MainWindow.axaml.cs:line 262
    at System.Threading.Tasks.Task.<>c.<ThrowAsync>b__128_0(Object state)
    at Avalonia.Threading.SendOrPostCallbackDispatcherOperation.InvokeCore()
    at Avalonia.Threading.DispatcherOperation.Execute()
@@ -17,4 +18,4 @@ System.Net.Http.HttpRequestException: Response status code does not indicate suc
    at Avalonia.Controls.ApplicationLifetimes.ClassicDesktopStyleApplicationLifetime.StartCore(String[] args)
    at Avalonia.Controls.ApplicationLifetimes.ClassicDesktopStyleApplicationLifetime.Start(String[] args)
    at Avalonia.ClassicDesktopStyleApplicationLifetimeExtensions.StartWithClassicDesktopLifetime(AppBuilder builder, String[] args, Action`1 lifetimeBuilder)
-   at WidgetDesktop.Program.Main(String[] args) in C:\Users\c\Desktop\NotionWidgetProject\apps\widget-desktop\Program.cs:line 13
+   at WidgetDesktop.Program.Main(String[] args) in C:\Users\2000d\Desktop\NotionWidgetProject\apps\widget-desktop\Program.cs:line 13

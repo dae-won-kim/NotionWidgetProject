@@ -125,7 +125,7 @@ public partial class MainWindow : Window
 
         try
         {
-            var data         = await _api.QueryItemsAsync(WidgetId);
+            var data         = await _api.QueryItemsAsync(WidgetId, _selectedDay);
             _statusOptions   = data.StatusOptions.ToList();
             _statusIdToColor = BuildColorMap(data.StatusOptions);
 
@@ -167,7 +167,30 @@ public partial class MainWindow : Window
 
     // ── Title-bar buttons ─────────────────────────────────────────────
 
-    private async void Refresh_Click(object? sender, RoutedEventArgs e)  => await LoadItemsAsync();
+    private async void Refresh_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button btn)
+        {
+            await LoadItemsAsync();
+            return;
+        }
+
+        var originalContent = btn.Content;
+        btn.IsEnabled = false;
+        btn.Content = "…";
+
+        try
+        {
+            await LoadItemsAsync();
+            btn.Content = "✓";
+            await Task.Delay(700);
+        }
+        finally
+        {
+            btn.Content = originalContent;
+            btn.IsEnabled = true;
+        }
+    }
     private void       Minimize_Click(object? sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
 
     private void Pin_Click(object? sender, RoutedEventArgs e)
@@ -206,11 +229,13 @@ public partial class MainWindow : Window
 
     // ── Day filter ────────────────────────────────────────────────────
 
-    private void DayFilter_Click(object? sender, RoutedEventArgs e)
+    private async void DayFilter_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is not Button b) return;
         _selectedDay = b.Tag?.ToString() ?? "";
-        RefreshDisplay();
+        ErrorText.IsVisible = false;
+        ErrorText.Text      = "";
+        await LoadItemsAsync();
     }
 
     private void RefreshDisplay()
@@ -221,9 +246,7 @@ public partial class MainWindow : Window
 
     private void ApplyDayFilter()
     {
-        var source = string.IsNullOrEmpty(_selectedDay)
-            ? _allItems
-            : _allItems.Where(it => it.Days.Contains(_selectedDay)).ToList();
+        var source = _allItems;
 
         _items.Clear();
         foreach (var it in source) _items.Add(it);
@@ -259,16 +282,34 @@ public partial class MainWindow : Window
     private async void StatusButton_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is not Button b || b.DataContext is not ItemDto item) return;
-        ApplyStatusUpdate(item, await _api.StatusNextAsync(WidgetId, item.Id));
         e.Handled = true;
+
+        if (!await EnsureCanEditSelectedDayAsync())
+        {
+            ClearStatusButtonEffects();
+            return;
+        }
+
+        await ApplyStatusUpdateWithFeedback(
+            b,
+            item,
+            () => _api.StatusNextAsync(WidgetId, item.Id));
     }
 
     // 왼쪽 상태 배지: 클릭하면 다른 상태 선택 팝업 표시
     private void StatusBadge_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is not Button b || b.DataContext is not ItemDto item) return;
-        ShowStatusFlyout(b, item);
         e.Handled = true;
+
+        if (string.IsNullOrEmpty(_selectedDay))
+        {
+            ShowInlineError(GetEditBlockedMessage());
+            ClearStatusButtonEffects();
+            return;
+        }
+
+        ShowStatusFlyout(b, item);
     }
 
     private void StatusButton_PointerPressed(object? sender, PointerPressedEventArgs e)
@@ -287,6 +328,13 @@ public partial class MainWindow : Window
 
     private void ShowStatusFlyout(Button anchor, ItemDto item)
     {
+        if (string.IsNullOrEmpty(_selectedDay))
+        {
+            ShowInlineError(GetEditBlockedMessage());
+            ClearStatusButtonEffects();
+            return;
+        }
+
         var others = _statusOptions
             .Where(o => !string.Equals(o.Name?.Trim(), item.Status?.Trim(),
                         StringComparison.OrdinalIgnoreCase))
@@ -316,9 +364,18 @@ public partial class MainWindow : Window
             };
             btn.Click += async (_, _) =>
             {
+                if (!await EnsureCanEditSelectedDayAsync())
+                {
+                    flyout?.Hide();
+                    ClearStatusButtonEffects();
+                    return;
+                }
+
                 flyout?.Hide();
-                var updated = await _api.StatusSetAsync(WidgetId, item.Id, optCapture.Id);
-                ApplyStatusUpdate(item, updated);
+                await ApplyStatusUpdateWithFeedback(
+                    anchor,
+                    item,
+                    () => _api.StatusSetAsync(WidgetId, item.Id, optCapture.Id));
             };
             stack.Children.Add(btn);
         }
@@ -329,6 +386,44 @@ public partial class MainWindow : Window
             Placement = PlacementMode.Bottom,
         };
         flyout.ShowAt(anchor);
+    }
+
+    private async Task ApplyStatusUpdateWithFeedback(
+        Button feedbackButton,
+        ItemDto item,
+        Func<Task<StatusUpdateResponseDto>> update)
+    {
+        var wasEnabled = feedbackButton.IsEnabled;
+        var isBadge = feedbackButton.Classes.Contains("status-badge");
+        var pendingText = isBadge ? "변경 중…" : "…";
+        var successText = isBadge ? "완료" : "✓";
+
+        feedbackButton.IsEnabled = false;
+        feedbackButton.Classes.Add("updating");
+        feedbackButton.Content = pendingText;
+        ShowInlineError("상태 변경 중…");
+
+        try
+        {
+            var updated = await update();
+            ApplyStatusUpdate(item, updated);
+            feedbackButton.Content = successText;
+            ShowInlineError("상태 변경 완료", new SolidColorBrush(Color.Parse("#5DDB8C")));
+            await Task.Delay(900);
+            ErrorText.IsVisible = false;
+            ErrorText.Text      = "";
+        }
+        catch (Exception ex)
+        {
+            ShowInlineError($"상태 변경 실패: {ex.Message}");
+        }
+        finally
+        {
+            feedbackButton.Classes.Remove("updating");
+            feedbackButton.IsEnabled = wasEnabled;
+            feedbackButton.ClearValue(ContentControl.ContentProperty);
+            ClearStatusButtonEffects();
+        }
     }
 
     private static SolidColorBrush StatusColorToBrush(string? colorName)
@@ -344,6 +439,8 @@ public partial class MainWindow : Window
 
     private void ApplyStatusUpdate(ItemDto item, StatusUpdateResponseDto updated)
     {
+        ErrorText.IsVisible = false;
+        ErrorText.Text      = "";
         item.Status         = updated.Status;
         item.StatusId       = updated.StatusId;
         item.LastEditedTime = updated.LastEditedTime;
@@ -351,6 +448,106 @@ public partial class MainWindow : Window
         SortAllItemsByStatus();
         RefreshDisplay();
         ClearStatusButtonEffects();
+    }
+
+    private void ShowInlineError(string message, IBrush? foreground = null)
+    {
+        ErrorText.Foreground = foreground ?? new SolidColorBrush(Color.Parse("#FF7070"));
+        ErrorText.IsVisible = true;
+        ErrorText.Text      = message;
+    }
+
+    private async Task<bool> EnsureCanEditSelectedDayAsync()
+    {
+        if (string.IsNullOrEmpty(_selectedDay))
+        {
+            ShowInlineError(GetEditBlockedMessage());
+            return false;
+        }
+
+        if (string.Equals(_selectedDay, GetTodayFilter(), StringComparison.Ordinal))
+            return true;
+
+        var confirmed = await ConfirmEditOutsideTodayAsync();
+        if (!confirmed)
+            ShowInlineError("상태 변경을 취소했습니다.");
+
+        return confirmed;
+    }
+
+    private string GetEditBlockedMessage()
+    {
+        var today = GetTodayFilter();
+
+        if (string.IsNullOrEmpty(_selectedDay))
+            return $"전체 보기에서는 상태를 수정할 수 없습니다. 오늘({today}) 필터에서만 수정할 수 있습니다.";
+
+        return $"{_selectedDay} 보기에서는 상태를 수정할 수 없습니다. 오늘({today})에 해당하는 항목만 수정할 수 있습니다.";
+    }
+
+    private async Task<bool> ConfirmEditOutsideTodayAsync()
+    {
+        var today = GetTodayFilter();
+        var message =
+            $"오늘은 {today}입니다.\n현재 선택한 {_selectedDay} 항목은 오늘 날짜에 해당하지 않습니다.\n그래도 이 요일의 상태를 수정할까요?";
+
+        var dialog = new Window
+        {
+            Title = "상태 변경 확인",
+            Width = 340,
+            SizeToContent = SizeToContent.Height,
+            CanResize = false,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Background = new SolidColorBrush(Color.Parse("#202033")),
+            Content = BuildConfirmDialogContent(message)
+        };
+
+        return await dialog.ShowDialog<bool>(this);
+    }
+
+    private static Control BuildConfirmDialogContent(string message)
+    {
+        var text = new TextBlock
+        {
+            Text = message,
+            TextWrapping = TextWrapping.Wrap,
+            Foreground = Brushes.White,
+            Margin = new Thickness(0, 0, 0, 18)
+        };
+
+        var cancel = new Button
+        {
+            Content = "취소",
+            MinWidth = 76,
+            HorizontalContentAlignment = HorizontalAlignment.Center
+        };
+        var confirm = new Button
+        {
+            Content = "수정",
+            MinWidth = 76,
+            HorizontalContentAlignment = HorizontalAlignment.Center,
+            Background = new SolidColorBrush(Color.Parse("#5060FF")),
+            Foreground = Brushes.White
+        };
+
+        cancel.Click += (_, _) => (cancel.GetVisualRoot() as Window)?.Close(false);
+        confirm.Click += (_, _) => (confirm.GetVisualRoot() as Window)?.Close(true);
+
+        return new StackPanel
+        {
+            Margin = new Thickness(18),
+            Children =
+            {
+                text,
+                new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Spacing = 8,
+                    Children = { cancel, confirm }
+                }
+            }
+        };
     }
 
     // ── Drag-drop reorder ─────────────────────────────────────────────

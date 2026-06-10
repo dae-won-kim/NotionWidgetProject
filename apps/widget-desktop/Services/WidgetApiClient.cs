@@ -17,9 +17,10 @@ public sealed class WidgetApiClient
 
     // ── Public API ────────────────────────────────────────────────────
 
-    public Task<QueryItemsResponseDto> QueryItemsAsync(string widgetId)
+    public Task<QueryItemsResponseDto> QueryItemsAsync(string widgetId, string? day = null)
         => PostAndUnwrap<QueryItemsResponseDto>(
-               $"v1/widgets/{widgetId}/items/query");
+               $"v1/widgets/{widgetId}/items/query",
+               new { day = day ?? "" });
 
     public Task<StatusUpdateResponseDto> StatusNextAsync(string widgetId, string itemId)
         => PostAndUnwrap<StatusUpdateResponseDto>(
@@ -33,8 +34,8 @@ public sealed class WidgetApiClient
 
     // ── Private helpers ───────────────────────────────────────────────
 
-    private async Task<T> PostAndUnwrap<T>(string url)
-        => await Unwrap<T>(await _http.PostAsync(url, content: null));
+    private async Task<T> PostAndUnwrap<T>(string url, object? body = null)
+        => await Unwrap<T>(await _http.PostAsJsonAsync(url, body ?? new { }));
 
     private async Task<T> SendAndUnwrap<T>(HttpRequestMessage req)
         => await Unwrap<T>(await _http.SendAsync(req));

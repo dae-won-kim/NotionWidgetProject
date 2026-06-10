@@ -172,6 +172,9 @@
     <Style Selector="Button.status-badge:pointerover /template/ ContentPresenter">
       <Setter Property="Opacity" Value="0.80"/>
     </Style>
+    <Style Selector="Button.status-badge.updating">
+      <Setter Property="Opacity" Value="0.65"/>
+    </Style>
 
     <!-- Status flyout presenter -->
     <Style Selector="FlyoutPresenter">
@@ -275,18 +278,21 @@
             <ColumnDefinition Width="Auto"/>
           </Grid.ColumnDefinitions>
 
-          <ScrollViewer HorizontalScrollBarVisibility="Auto"
+          <ScrollViewer Height="38"
+                        HorizontalScrollBarVisibility="Auto"
                         VerticalScrollBarVisibility="Disabled">
-            <StackPanel Orientation="Horizontal" Spacing="4">
-              <Button Name="FilterAll" Classes="day-filter" Content="전체" Click="DayFilter_Click" Tag=""/>
-              <Button Name="FilterMon" Classes="day-filter" Content="월"   Click="DayFilter_Click" Tag="월요일"/>
-              <Button Name="FilterTue" Classes="day-filter" Content="화"   Click="DayFilter_Click" Tag="화요일"/>
-              <Button Name="FilterWed" Classes="day-filter" Content="수"   Click="DayFilter_Click" Tag="수요일"/>
-              <Button Name="FilterThu" Classes="day-filter" Content="목"   Click="DayFilter_Click" Tag="목요일"/>
-              <Button Name="FilterFri" Classes="day-filter" Content="금"   Click="DayFilter_Click" Tag="금요일"/>
-              <Button Name="FilterSat" Classes="day-filter" Content="토"   Click="DayFilter_Click" Tag="토요일"/>
-              <Button Name="FilterSun" Classes="day-filter" Content="일"   Click="DayFilter_Click" Tag="일요일"/>
-            </StackPanel>
+            <Border Padding="0,0,0,14">
+              <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Top">
+                <Button Name="FilterAll" Classes="day-filter" Content="전체" Click="DayFilter_Click" Tag=""/>
+                <Button Name="FilterMon" Classes="day-filter" Content="월"   Click="DayFilter_Click" Tag="월요일"/>
+                <Button Name="FilterTue" Classes="day-filter" Content="화"   Click="DayFilter_Click" Tag="화요일"/>
+                <Button Name="FilterWed" Classes="day-filter" Content="수"   Click="DayFilter_Click" Tag="수요일"/>
+                <Button Name="FilterThu" Classes="day-filter" Content="목"   Click="DayFilter_Click" Tag="목요일"/>
+                <Button Name="FilterFri" Classes="day-filter" Content="금"   Click="DayFilter_Click" Tag="금요일"/>
+                <Button Name="FilterSat" Classes="day-filter" Content="토"   Click="DayFilter_Click" Tag="토요일"/>
+                <Button Name="FilterSun" Classes="day-filter" Content="일"   Click="DayFilter_Click" Tag="일요일"/>
+              </StackPanel>
+            </Border>
           </ScrollViewer>
 
           <!-- Theme toggle: click each button or swipe left/right -->
@@ -294,6 +300,7 @@
                   Grid.Column="1"
                   Background="Transparent"
                   Margin="4,0,0,0"
+                  VerticalAlignment="Top"
                   PointerPressed="ThemeSwipe_PointerPressed"
                   PointerReleased="ThemeSwipe_PointerReleased">
             <StackPanel Orientation="Horizontal" Spacing="1">
