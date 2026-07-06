@@ -23,3 +23,7 @@
 Thumbs.db
 
 .fake
+# =========================
+# Keys
+# =========================
+**/appsettings.Development.json
